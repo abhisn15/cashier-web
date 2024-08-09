@@ -1,43 +1,17 @@
 <?php
-
 $conn = mysqli_connect('localhost', 'root', '', 'kasir');
 
 if (!$conn) {
   die("Connection failed: " . mysqli_connect_error());
 }
-
-function query($query, $params = [])
+function query($query)
 {
   global $conn;
-  $stmt = mysqli_prepare($conn, $query);
-  if (!$stmt) {
-    die("Query Error: " . mysqli_error($conn));
+  $result = mysqli_query($conn, $query);
+  if (!$result) {
+    die("Query failed: " . mysqli_error($conn));
   }
-
-  if ($params) {
-    $types = str_repeat('s', count($params));
-    mysqli_stmt_bind_param($stmt, $types, ...$params);
-  }
-
-  mysqli_stmt_execute($stmt);
-  $result = mysqli_stmt_get_result($stmt);
-
-  if ($result == false) {
-    die("Execute Error: " . mysqli_stmt_error($stmt));
-  }
-
-  if (stripos($query, 'SELECT') === 0) {
-    $rows = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-      $rows[] = $row;
-    }
-    mysqli_stmt_close($stmt);
-    return $rows;
-  } else {
-    $affacted_rows = mysqli_stmt_affected_rows($stmt);
-    mysqli_stmt_close($stmt);
-    return $affacted_rows;
-  }
+  return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
 function upload()
@@ -75,10 +49,10 @@ function upload()
 
   // generate nama gambar baru
   $ekstensiGambar = pathinfo($namaFile, PATHINFO_EXTENSION);
-  $namaFileBaru = uniqid() . '.' . $ekstensiGambar;
+  $namaFileBaru = uniqid() . '' . $ekstensiGambar;
 
   // tentukan alamat penyimpanan file secara absolut
-  $alamatSimpan = '../img/' . $namaFileBaru;
+  $alamatSimpan = __DIR__ . '/assets/img/' . $namaFileBaru;
 
   if (move_uploaded_file($tmpName, $alamatSimpan)) {
     return $namaFileBaru; // mengembalikan nama file baru
@@ -91,31 +65,131 @@ function upload()
   }
 }
 
-function tambahPegawai($data)
+function tambahUser($conn)
 {
-  global $conn;
-  $nama_siswa = htmlspecialchars($data["nama_siswa"]);
-  $nisn = htmlspecialchars($data["nisn"]);
-  $nama_jurusan = htmlspecialchars($data["nama_jurusan"]);
-  $kelas = htmlspecialchars($data["kelas"]);
-  $gambar = upload(); // Menggunakan fungsi upload untuk mendapatkan nama file
+  $nama = $no_hp = $role = $email = $password = $confirm_password = "";
+  $nama_err = $no_hp_err = $role_err = $email_err = $password_err = $confirm_password_err = "";
 
-  if (!$gambar) {
-    return false;
+  if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    // Validasi nama
+    if (empty(input($_POST["nama"]))) {
+      $nama_err = "Please enter a name.";
+    } else {
+      $nama = input($_POST["nama"]);
+    }
+
+    // Validasi nomor handphone
+    if (empty(input($_POST["no_hp"]))) {
+      $no_hp_err = "Please enter a phone number.";
+    } else {
+      $no_hp = input($_POST["no_hp"]);
+      if (!ctype_digit($no_hp)) {
+        $no_hp_err = "Please enter a valid phone number.";
+      }
+    }
+
+    // Validasi Role
+    if (empty(input($_POST["role"]))) {
+      $role_err = "Please enter a role value.";
+    } else {
+      $role = input($_POST["role"]);
+      // Validasi jika role termasuk dalam daftar yang valid
+      $valid_roles = ['User', 'Kasir', 'Staff']; // Daftar role yang valid
+      if (!in_array($role, $valid_roles)) {
+        $role_err = "Invalid role selected.";
+      }
+    }
+
+    // Validasi email
+    if (empty(input($_POST["email"]))) {
+      $email_err = "Please enter an email.";
+    } else {
+      $email = input($_POST["email"]);
+      // Cek jika email sudah digunakan di database
+      $sql = "SELECT id FROM users WHERE email = ?";
+      if ($stmt = mysqli_prepare($conn, $sql)) {
+        mysqli_stmt_bind_param($stmt, "s", $email);
+        if (mysqli_stmt_execute($stmt)) {
+          mysqli_stmt_store_result($stmt);
+          if (mysqli_stmt_num_rows($stmt) == 1) {
+            $email_err = "This email is already taken.";
+          }
+        } else {
+          echo "Oops! Something went wrong. Please try again later.";
+        }
+        mysqli_stmt_close($stmt);
+      }
+    }
+
+    // Validasi password
+    if (empty(input($_POST["password"]))) {
+      $password_err = "Please enter a password.";
+    } elseif (strlen(input($_POST["password"])) < 6) {
+      $password_err = "Password must have at least 6 characters.";
+    } else {
+      $password = input($_POST["password"]);
+    }
+
+    // Validasi confirm password
+    if (empty(input($_POST["confirm_password"]))) {
+      $confirm_password_err = "Please confirm password.";
+    } else {
+      $confirm_password = input($_POST["confirm_password"]);
+      if (empty($password_err) && ($password != $confirm_password)) {
+        $confirm_password_err = "Password did not match.";
+      }
+    }
+
+    if (empty($nama_err) && empty($no_hp_err) && empty($role_err) && empty($email_err) && empty($password_err) && empty($confirm_password_err)) {
+      $sql = "INSERT INTO users (nama, no_hp, role, email, password) VALUES (?, ?, ?, ?, ?)";
+
+      if ($stmt = mysqli_prepare($conn, $sql)) {
+        mysqli_stmt_bind_param($stmt, "sssss", $nama, $no_hp, $role, $email, $param_password);
+        $param_password = password_hash($password, PASSWORD_DEFAULT); // Hash the password
+
+        if (mysqli_stmt_execute($stmt)) {
+          echo "<script>
+                        alert('User berhasil ditambahkan');
+                        window.location.href = '../Users.php';
+                    </script>";
+        } else {
+          echo "<script>alert('Oops, tampaknya ada yang salah, tolong login kembali!')</script>";
+        }
+        mysqli_stmt_close($stmt);
+      }
+    }
   }
 
-  $query = "INSERT INTO siswa (nama_siswa, nisn, nama_jurusan, kelas, gambar) 
-              VALUES ('$nama_siswa', '$nisn', '$nama_jurusan', '$kelas', '$gambar')";
-
-  mysqli_query($conn, $query);
-
-  return mysqli_affected_rows($conn);
+  return [
+    'nama' => $nama,
+    'no_hp' => $no_hp,
+    'role' => $role,
+    'email' => $email,
+    'password' => $password,
+    'confirm_password' => $confirm_password,
+    'nama_err' => $nama_err,
+    'no_hp_err' => $no_hp_err,
+    'role_err' => $role_err,
+    'email_err' => $email_err,
+    'password_err' => $password_err,
+    'confirm_password_err' => $confirm_password_err
+  ];
 }
+
 
 function hapus($id)
 {
   global $conn;
-  mysqli_query($conn, "DELETE FROM siswa WHERE id = $id");
+  mysqli_query($conn, "DELETE FROM users WHERE id = $id");
+
+  return mysqli_affected_rows($conn);
+}
+
+function hapusBarang($id)
+{
+  global $conn;
+  mysqli_query($conn, "DELETE FROM barang WHERE id = $id");
 
   return mysqli_affected_rows($conn);
 }
@@ -158,53 +232,141 @@ function ubah($data)
   return $affected_rows;
 }
 
-
-function cari($keyword)
+function editProduk($data, $id)
 {
-  $query = "SELECT * FROM siswa
-                WHERE 
-            nama_siswa LIKE '%$keyword%' OR
-            kelas LIKE '%$keyword%' OR
-            nama_jurusan LIKE '%$keyword%' 
-            
-    ";
-  return query($query);
+  global $conn;
+
+  $kode_barang = htmlspecialchars($data["kode_barang"]);
+  $nama_barang = htmlspecialchars($data["nama_barang"]);
+  $expired = htmlspecialchars($data["expired"]);
+  $harga = htmlspecialchars($data["harga"]);
+  $stok = htmlspecialchars($data["stok"]);
+  $gambarLama = htmlspecialchars($data["gambarLama"]);
+
+  // Cek apakah user memilih gambar baru atau tidak
+  if ($_FILES['gambar']['error'] === 4) {
+    $gambar = $gambarLama;
+  } else {
+    $gambar = upload();
+    if (!$gambar) {
+      return false;
+    }
+
+    // Hapus gambar lama jika gambar baru berhasil diupload
+    if ($gambarLama && file_exists('../../assets/img/' . $gambarLama)) {
+      unlink('../../assets/img/' . $gambarLama);
+    }
+  }
+
+  $query = "UPDATE barang SET
+                kode_barang = '$kode_barang',
+                nama_barang = '$nama_barang',
+                expired = '$expired',
+                harga = '$harga',
+                stok = '$stok',
+                gambar = '$gambar'
+              WHERE id = $id";
+
+  mysqli_query($conn, $query);
+
+  return mysqli_affected_rows($conn);
 }
 
-function input($data) {
-  return htmlspecialchars(stripslashes(trim($data)));
+
+function generateKodeBarang()
+{
+  global $conn;
+
+  // Ambil kode barang terakhir dari database
+  $query = "SELECT kode_barang FROM barang ORDER BY id DESC LIMIT 1";
+  $result = mysqli_query($conn, $query);
+  $row = mysqli_fetch_assoc($result);
+
+  if ($row) {
+    // Ambil angka terakhir dari kode barang dan tambahkan 1
+    $lastKode = $row['kode_barang'];
+    $lastNumber = (int)substr($lastKode, -4); // Ambil 4 digit terakhir dari kode
+    $newNumber = str_pad($lastNumber + 1, 4, "0", STR_PAD_LEFT); // Tambah 1 dan padding 0
+  } else {
+    $newNumber = "0001"; // Jika belum ada data, mulai dari 0001
+  }
+
+  // Gabungkan awalan "PRD-" dengan nomor urut baru
+  $newKodeBarang = "BRG-" . $newNumber;
+
+  return $newKodeBarang;
+}
+
+function tambahProduk($data)
+{
+  global $conn;
+
+  // Generate kode barang baru
+  $kode_barang = generateKodeBarang();
+  $nama_barang = htmlspecialchars($data["nama_barang"]);
+  $expired = htmlspecialchars($data["expired"]);
+  $harga = htmlspecialchars($data["harga"]);
+  $stok = htmlspecialchars($data["stok"]);
+  $gambar = upload(); // Menggunakan fungsi upload untuk mendapatkan nama file
+
+  if (!$gambar) {
+    return false;
+  }
+
+  $query = "INSERT INTO barang (kode_barang, nama_barang, expired, harga, stok, gambar) 
+              VALUES ('$kode_barang', '$nama_barang', '$expired', '$harga', '$stok', '$gambar')";
+
+  mysqli_query($conn, $query);
+
+  return mysqli_affected_rows($conn);
+}
+
+function input($data)
+{
+  $data = trim($data);
+  $data = stripslashes($data);
+  $data = htmlspecialchars($data);
+  return $data;
 }
 
 function register($conn)
 {
-  $email = $password = $confirm_password = "";
-  $email_err = $password_err = $confirm_password_err = "";
+  $nama = $no_hp = $email = $password = $confirm_password = "";
+  $nama_err = $no_hp_err = $email_err = $password_err = $confirm_password_err = "";
 
   if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
+
     // Validasi nama
     if (empty(input($_POST["nama"]))) {
-      $email_err = "Please enter a nama.";
+      $nama_err = "Please enter a name.";
+    } else {
+      $nama = input($_POST["nama"]);
     }
 
-    // Validasi nomor ho
+    // Validasi nomor handphone
     if (empty(input($_POST["no_hp"]))) {
-      $email_err = "Please enter a nomor handphone.";
+      $no_hp_err = "Please enter a phone number.";
+    } else {
+      $no_hp = input($_POST["no_hp"]);
+      if (!ctype_digit($no_hp)) {
+        $no_hp_err = "Please enter a valid phone number.";
+      }
     }
 
     // Validasi email
     if (empty(input($_POST["email"]))) {
-      $email_err = "Please enter a email.";
+      $email_err = "Please enter an email.";
     } else {
       $email = input($_POST["email"]);
-      // Cek jika user sudah digunakan di database
+      // Cek jika email sudah digunakan di database
       $sql = "SELECT id FROM users WHERE email = ?";
       if ($stmt = mysqli_prepare($conn, $sql)) {
         mysqli_stmt_bind_param($stmt, "s", $email);
         if (mysqli_stmt_execute($stmt)) {
           mysqli_stmt_store_result($stmt);
           if (mysqli_stmt_num_rows($stmt) == 1) {
-            $email_err = "Nama ini sudah ada yang punya.";
+            $email_err = "This email is already taken.";
           }
         } else {
           echo "Oops! Something went wrong. Please try again later.";
@@ -217,26 +379,27 @@ function register($conn)
     if (empty(input($_POST["password"]))) {
       $password_err = "Please enter a password.";
     } elseif (strlen(input($_POST["password"])) < 6) {
-      $password_err = "Password harus berjumlah 6 karakter.";
+      $password_err = "Password must have at least 6 characters.";
     } else {
       $password = input($_POST["password"]);
     }
 
     // Validasi confirm password
     if (empty(input($_POST["confirm_password"]))) {
-      $confirm_password_err = "Tolong konfirmasi password.";
+      $confirm_password_err = "Please confirm password.";
     } else {
       $confirm_password = input($_POST["confirm_password"]);
       if (empty($password_err) && ($password != $confirm_password)) {
-        $confirm_password_err = "Konfirmasi password belum sesuai.";
+        $confirm_password_err = "Password did not match.";
       }
     }
 
-    if (empty($email_err) && empty($password_err) && empty($confirm_password_err)) {
+    if (empty($nama_err) && empty($no_hp_err) && empty($email_err) && empty($password_err) && empty($confirm_password_err)) {
       $sql = "INSERT INTO users (nama, no_hp, email, password) VALUES (?, ?, ?, ?)";
 
+
       if ($stmt = mysqli_prepare($conn, $sql)) {
-        mysqli_stmt_bind_param($stmt, "ss", $nama, $no_hp, $email, $param_password);
+        mysqli_stmt_bind_param($stmt, "ssss", $nama, $no_hp, $email, $param_password);
         $param_password = password_hash($password, PASSWORD_DEFAULT); // Hash the password
 
         if (mysqli_stmt_execute($stmt)) {
@@ -259,6 +422,8 @@ function register($conn)
     'email' => $email,
     'password' => $password,
     'confirm_password' => $confirm_password,
+    'nama_err' => $nama_err,
+    'no_hp_err' => $no_hp_err,
     'email_err' => $email_err,
     'password_err' => $password_err,
     'confirm_password_err' => $confirm_password_err
@@ -270,12 +435,12 @@ function login($conn)
   session_start();
 
   $email = $password = "";
-  $username_err = $password_err = "";
+  $email_err = $password_err = "";
 
   if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (empty(trim($_POST["email"]))) {
-      $username_err = "Tolong isi email.";
+      $email_err = "Tolong isi email.";
     } else {
       $email = trim($_POST["email"]);
     }
@@ -286,11 +451,11 @@ function login($conn)
       $password = trim($_POST["password"]);
     }
 
-    if (empty($username_err) && empty($password_err)) {
-      $sql = "SELECT id, email, password, role FROM users WHERE email = ?";
+    if (empty($email_err) && empty($password_err)) {
+      $sql = "SELECT id, nama, email, password, role FROM users WHERE email = ?";
       if ($stmt = mysqli_prepare($conn, $sql)) {
-        mysqli_stmt_bind_param($stmt, "s", $param_username);
-        $param_username = $email;
+        mysqli_stmt_bind_param($stmt, "s", $param_email);
+        $param_email = $email;
 
         if (mysqli_stmt_execute($stmt)) {
           mysqli_stmt_store_result($stmt);
@@ -300,16 +465,20 @@ function login($conn)
             if (mysqli_stmt_fetch($stmt)) {
               if (password_verify($password, $hashed_password)) {
                 session_start();
-                $_SESSION["loggedin"] = true;
+                $_SESSION["login"] = true;
                 $_SESSION["id"] = $id;
                 $_SESSION["nama"] = $nama;
                 $_SESSION["role"] = $role;
                 setcookie("nama", $nama, time() + (86400 * 2), "/"); // Cookie berlaku selama 2 hari
 
-                if ($role == 'Admin') {
-                  header("Location: ../library-php-native/admin/Dashboard.php");
-                } elseif ($role == 'Anggota') {
-                  header("Location: ../library-php-native/user/Dashboard.php");
+                if ($role == 'SuperAdmin') {
+                  header("Location: SuperAdmin/Dashboard.php");
+                } elseif ($role == 'Staff') {
+                  header("Location: Staff/Dashboard.php");
+                } elseif ($role == 'Kasir') {
+                  header("Location: Kasir/Dashboard.php");
+                } elseif ($role == 'User') {
+                  header("Location: Pelanggan/Dashboard.php");
                 } else {
                   header("Location: ../index.php");
                 }
@@ -319,7 +488,7 @@ function login($conn)
               }
             }
           } else {
-            $username_err = "Tidak menemukan akun dengan email $email.";
+            $email_err = "Tidak menemukan akun dengan email $email.";
           }
         } else {
           echo "<script>alert('Oops, tampaknya ada yang salah, tolong login kembali!')</script>";
@@ -332,7 +501,7 @@ function login($conn)
   return [
     'email' => $email,
     'password' => $password,
-    'username_err' => $username_err,
+    'email_err' => $email_err,
     'password_err' => $password_err
   ];
 }

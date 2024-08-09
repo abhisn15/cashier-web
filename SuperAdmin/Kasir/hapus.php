@@ -12,21 +12,21 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $_SESSION['role
 
 $id = intval($_GET["id"]); // Pastikan $id adalah integer untuk keamanan
 
-$nama_barang = query("SELECT nama_barang FROM barang WHERE id = $id");
-$barang = $nama_barang[0]['barang'] ?? 'Barang';
+$nama_user = query("SELECT nama FROM users WHERE id = $id");
+$nama = $nama_user[0]['nama'] ?? 'User';
 
-if (hapusBarang($id) > 0) {
+if (hapus($id) > 0) {
   echo "
     <script>
-        alert('$barang berhasil dihapus!');
-        document.location.href = '../Produk.php';
+        alert('User dengan nama $nama berhasil dihapus!');
+        document.location.href = '../Kasir.php';
     </script>
     ";
 } else {
   echo "
     <script>
-        alert('$barang gagal dihapus!');
-        document.location.href = '../Produk.php';
+        alert('User dengan nama $nama gagal dihapus!');
+        document.location.href = '../Kasir.php';
     </script>
     ";
 }

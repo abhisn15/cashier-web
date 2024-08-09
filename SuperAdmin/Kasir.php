@@ -6,39 +6,39 @@ $username = $_SESSION['nama'];
 
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || isset($_SESSION['SuperAdmin'])) {
   header('Location: ../login.php');
-  exit;
 }
 
-// Fungsi untuk mencari data produk berdasarkan keyword
+// Fungsi untuk mencari data pengguna berdasarkan keyword
 function cari($keyword)
 {
   global $conn;
+  $stmt = $conn->prepare("SELECT * FROM users WHERE nama LIKE ? AND role IN ('Kasir')");
   $search = "%$keyword%";
-  $stmt = $conn->prepare("SELECT * FROM barang WHERE nama_barang LIKE ?");
   $stmt->bind_param('s', $search);
   $stmt->execute();
   $result = $stmt->get_result();
   return $result->fetch_all(MYSQLI_ASSOC);
 }
 
-
 // Mengecek apakah form pencarian telah disubmit
 if (isset($_POST["cari"])) {
   $keyword = trim($_POST["keyword"]);
   if (empty($keyword)) {
-    // Jika keyword kosong, ambil semua data
-    $produk = query("SELECT * FROM barang");
+    // Jika keyword kosong, ambil semua data dengan pagination
+    $kasir = query("SELECT * FROM users WHERE role IN ('Kasir')");
+    $total = query("SELECT COUNT(*) AS total FROM users WHERE role IN ('Kasir')")[0]['total'];
   } else {
     // Jika keyword tidak kosong, cari data yang sesuai
-    $produk = cari($keyword);
+    $kasir = cari($keyword);
+    $total = count($kasir);
   }
 } else {
-  // Query untuk mengambil semua data saat tidak ada pencarian
-  $produk = query("SELECT * FROM barang");
+  // Query untuk mengambil data sesuai halaman
+  $kasir = query("SELECT * FROM users WHERE role IN ('Kasir')");
+  // Query untuk menghitung total data
+  $total = query("SELECT COUNT(*) AS total FROM users WHERE role IN ('Kasir')")[0]['total'];
 }
-
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -46,7 +46,7 @@ if (isset($_POST["cari"])) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuperAdmin | Produk</title>
+  <title>SuperAdmin | Karyawan</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
   <link rel="stylesheet" href="../assets/css/style.css" />
@@ -54,7 +54,7 @@ if (isset($_POST["cari"])) {
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 
-<body class="">
+<body>
   <button data-drawer-target="logo-sidebar" data-drawer-toggle="logo-sidebar" aria-controls="logo-sidebar" type="button" class="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200">
     <span class="sr-only">Open sidebar</span>
     <svg class="w-10 h-10 ml-5 sm:ml-0" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -70,25 +70,37 @@ if (isset($_POST["cari"])) {
     <div class="h-full px-3 pb-4 overflow-y-auto bg-white rounded-b-2xl bg-gray-800 border-r-2">
       <ul class="space-y-2 font-medium">
         <li>
-          <a href="Dashboard.php" class="flex items-center p-2 rounded-lg text-grayy-900 hover:text-white hover:bg-orange-400 group">
+          <a href="Dashboard.php" class="flex items-center p-2 rounded-lg text-gray-900 hover:text-white hover:bg-orange-400 group">
             <ion-icon name="home-sharp" class="text-2xl"></ion-icon>
             <span class="ms-3">Dashboard</span>
           </a>
         </li>
         <li>
-          <a href="#" class="flex items-center p-2 rounded-lg text-white bg-orange-400 group">
-            <ion-icon name="cube" class="text-gray-900 text-2xl text-white""></ion-icon>
+          <a href="Produk.php" class="flex items-center p-2 rounded-lg text-gray-900 hover:text-white hover:bg-orange-400 group">
+            <ion-icon name="cube" class="text-2xl"></ion-icon>
             <span class=" flex-1 ms-3 whitespace-nowrap">Produk</span>
           </a>
         </li>
         <li>
-          <button type="button" class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-orange-400 hover:text-white" onclick="location.href = 'Users.php'">
+          <button type="button" class="flex items-center w-full p-2 text-base transition duration-75 rounded-lg group bg-orange-400 text-white" aria-controls="dropdown-example" data-collapse-toggle="dropdown-example">
             <ion-icon name="people-sharp" class="text-2xl"></ion-icon>
             <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">Users</span>
-            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
+            <svg class="w-5 h-5" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" fill="white" fill-opacity="0.01" />
+              <path d="M13 30L25 18L37 30" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </button>
+          <ul class=" py-2 space-y-2">
+            <li>
+              <a href="Pelanggan.php" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-orange-400 hover:text-white">Pelanggan</a>
+            </li>
+            <li>
+              <a href="#" class="flex items-center w-full p-2 transition duration-75 rounded-lg pl-11 group bg-orange-400 text-white">Kasir</a>
+            </li>
+            <li>
+              <a href="Staff.php" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-orange-400 hover:text-white">Staff</a>
+            </li>
+          </ul>
         </li>
         <li>
           <a href="Transaksi.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:text-white hover:bg-orange-400 group">
@@ -107,11 +119,12 @@ if (isset($_POST["cari"])) {
   </aside>
 
   <div class="sm:pl-8 py-5 mx-10 sm:ml-64 sm:mr-10">
-    <h1 class="text-2xl">Produk</h1>
+    <h1 class="text-2xl">Kasir</h1>
     <br>
     <div class="text-xl flex flex-row items-center gap-4">
-      <a href="#" class="text-orange-500">Produk</a>
+      <a href="Users.php" class="text-gray-500">Users</a>
       <span class="text-gray-500">/</span>
+      <a href="#" class="text-orange-500">Kasir</a>
     </div>
     <br>
     <div class="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -122,81 +135,54 @@ if (isset($_POST["cari"])) {
         </svg>
         <button type="submit" name="cari" class="sr-only">Search</button>
       </form>
-
-      <button onclick="location.href = './Produk/tambah.php'" class="relative overflow-hidden text-white py-3 px-6 font-semibold rounded-3xl shadow-xl transform transition-all duration-500">
-        <span class="absolute top-0 left-0 w-full h-full bg-orange-400"></span>
-        <div class="flex flex-row items-center gap-2">
-          <ion-icon name="add-sharp" class="text-sm sm:text-2xl text-white font-extrabold"></ion-icon>
-          <span class="relative z-10 text-[12px] sm:text-sm">Tambah Barang</span>
-        </div>
-      </button>
     </div>
     <br>
 
-
-    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-      <table class="w-full text-sm text-left rtl:text-right text-gray-500 text-gray-400">
-        <thead class="text-xs text-gray-700 uppercase bg-gray-50 text-gray-400">
+    <div class="relative overflow-x-auto shadow-md sm:rounded-lg ">
+      <table class="w-full text-sm text-left rtl:text-right text-gray-500">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
           <tr>
             <th scope="col" class="px-6 py-3">
               No
             </th>
             <th scope="col" class="px-6 py-3">
-              Nama Produk
+              Nama Kasir
             </th>
             <th scope="col" class="px-6 py-3 text-center">
-              Gambar
+              Email
             </th>
             <th scope="col" class="px-6 py-3 text-center">
-              Kode Barang
-            </th>
-            <th scope="col" class="px-6 py-3 text-center">
-              Harga
-            </th>
-            <th scope="col" class="px-6 py-3 text-center">
-              Tanggal Kadaluarsa
-            </th>
-            <th scope="col" class="px-6 py-3 text-center">
-              Stok
+              Nomor Handphone
             </th>
             <th scope="col" class="px-6 py-3 text-center">
               Aksi
             </th>
           </tr>
         </thead>
-        <tbody>
-          <?php $i = 1; ?>
-          <?php foreach ($produk as $row) : ?>
-            <tr class="bg-white border-b bg-gray-800 border-gray-700 hover:bg-gray-50">
+        <?php $i = 1; ?>
+        <?php foreach ($kasir as $row) : ?>
+          <tbody>
+            <tr class="bg-white border-b hover:bg-gray-50">
               <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                 <?= $i++ ?>
               </th>
-              <th scope="row" class="px-6 py-4 font-medium text-gray-900">
-                <?= $row['nama_barang'] ?>
+              <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                <?= htmlspecialchars($row['nama']) ?>
               </th>
-              <td class="px-6 py-4 flex justify-center">
-                <img src="../assets/img/<?= $row['gambar'] ?>" alt="<?= $row['nama_barang'] ?>" width="100">
+              <td class="px-6 py-4 text-center">
+                <?= htmlspecialchars($row['email']) ?>
               </td>
               <td class="px-6 py-4 text-center">
-                <?= $row['kode_barang'] ?>
+                <?= htmlspecialchars($row['no_hp']) ?>
               </td>
               <td class="px-6 py-4 text-center">
-                <?php echo 'Rp ' . number_format($row['harga'], 0, ',', '.'); ?>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <?= $row['expired'] ?>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <?= $row['stok'] ?>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <a href="Produk/edit.php?id=<?= $row['id'] ?>" class="font-medium text-blue-600 hover:underline">Edit</a>
+                <a href="Kasir/edit.php?id=<?= htmlspecialchars($row['id']) ?>" class="font-medium text-blue-600 hover:underline">Edit</a>
                 <span>|</span>
-                <a onclick="return confirm('Apakah kamu yakin ingin menghapus produk ini?');" href="Produk/hapus.php?id=<?= $row['id'] ?>" class="font-medium text-red-600 hover:underline">Hapus</a>
+                <a onclick="return confirm('Apakah kamu yakin ingin menghapus user ini?');" href="Kasir/hapus.php?id=<?= htmlspecialchars($row['id']) ?>" class="font-medium text-red-600 hover:underline">Hapus</a>
               </td>
             </tr>
-          <?php endforeach; ?>
-        </tbody>
+          </tbody>
+        <?php endforeach ?>
       </table>
     </div>
 

@@ -3,8 +3,9 @@ session_start();
 
 $username = $_SESSION['nama'];
 
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || isset($_SESSION['Pelanggan'])) {
+if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || isset($_SESSION['User'])) {
   header('Location: ../login.php');
+  exit;
 }
 
 ?>

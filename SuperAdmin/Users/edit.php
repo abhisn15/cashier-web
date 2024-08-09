@@ -5,30 +5,31 @@ error_reporting(E_ALL);
 require '../../functions.php';
 session_start();
 
-// Cek apakah user sudah login dan memiliki role SuperAdmin
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $_SESSION['role'] !== 'SuperAdmin') {
   header('Location: ../login.php');
   exit;
 }
 
-// mengecek tombol submit sudah ditekan atau belum
-if (isset($_POST["submit"])) {
-  if (tambahProduk($_POST) > 0) {
-    echo "
-        <script>
-            alert('Produk berhasil ditambahkan!');
-            document.location.href = '../Produk.php';
-        </script>
-        ";
+$karyawan = query('SELECT id, nama, email, no_hp, role FROM users WHERE id = ' . $_GET['id']);
+$roles = ['User', 'Kasir', 'Staff'];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $id = $_POST['id'];
+  $name = $_POST['name'];
+  $email = $_POST['email'];
+  $no_hp = $_POST['no_hp'];
+  $role = $_POST['role'];
+
+  $query = "UPDATE users SET nama = '$name', email = '$email', no_hp = '$no_hp', role = '$role' WHERE id = '$id'";
+  $result = mysqli_query($conn, $query);
+
+  if ($result) {
+    header('Location: ../Users.php');
   } else {
-    echo "
-        <script>
-            alert('Produk gagal ditambahkan!');
-            document.location.href = '../Produk.php';
-        </script>
-        ";
+    echo "Error: " . mysqli_error($conn);
   }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -37,8 +38,9 @@ if (isset($_POST["submit"])) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuperAdmin | Tambah Produk</title>
+  <title>SuperAdmin | Edit Data Karyawan</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
   <link rel="stylesheet" href="../assets/css/style.css" />
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
@@ -52,7 +54,6 @@ if (isset($_POST["submit"])) {
     </svg>
   </button>
 
-  <!-- Konten Sidebar disini -->
   <aside id="logo-sidebar" class="fixed top-0 left-0 z-40 w-64 h-[90dvh] transition-transform -translate-x-full bg-white rounded-r-2xl shadow-xl sm:translate-x-0 border-r-2" aria-label="Sidebar">
     <div class="flex flex-row py-5 items-end pl-5">
       <span class="text-3xl font-bold text-orange-400">Bi</span>
@@ -61,25 +62,37 @@ if (isset($_POST["submit"])) {
     <div class="h-full px-3 pb-4 overflow-y-auto bg-white rounded-b-2xl bg-gray-800 border-r-2">
       <ul class="space-y-2 font-medium">
         <li>
-          <a href="../Dashboard.php" class="flex items-center p-2 rounded-lg text-grayy-900 hover:text-white hover:bg-orange-400 group">
+          <a href="../Dashboard.php" class="flex items-center p-2 rounded-lg text-gray-900 hover:text-white hover:bg-orange-400 group">
             <ion-icon name="home-sharp" class="text-2xl"></ion-icon>
             <span class="ms-3">Dashboard</span>
           </a>
         </li>
         <li>
-          <a href="#" class="flex items-center p-2 rounded-lg text-white bg-orange-400 group">
-            <ion-icon name="cube" class="text-gray-900 text-2xl text-white""></ion-icon>
+          <a href="../Produk.php" class="flex items-center p-2 rounded-lg text-gray-900 hover:text-white hover:bg-orange-400 group">
+            <ion-icon name="cube" class="text-2xl"></ion-icon>
             <span class=" flex-1 ms-3 whitespace-nowrap">Produk</span>
           </a>
         </li>
         <li>
-          <button type="button" class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-orange-400 hover:text-white" onclick="location.href = 'Users.php'">
+          <button type="button" class="flex items-center w-full p-2 text-base transition duration-75 rounded-lg group bg-orange-400 text-white" aria-controls="dropdown-example" data-collapse-toggle="dropdown-example">
             <ion-icon name="people-sharp" class="text-2xl"></ion-icon>
             <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">Users</span>
-            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
+            <svg class="w-5 h-5" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" fill="white" fill-opacity="0.01" />
+              <path d="M13 30L25 18L37 30" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </button>
+          <ul class=" py-2 space-y-2">
+            <li>
+              <a href="../Pelanggan.php" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-orange-400 hover:text-white">Pelanggan</a>
+            </li>
+            <li>
+              <a href="../Kasir.php" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-orange-400 hover:text-white">Kasir</a>
+            </li>
+            <li>
+              <a href="../Staff.php" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-orange-400 hover:text-white">Staff</a>
+            </li>
+          </ul>
         </li>
         <li>
           <a href="../Transaksi.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:text-white hover:bg-orange-400 group">
@@ -98,15 +111,13 @@ if (isset($_POST["submit"])) {
   </aside>
 
   <div class="sm:pl-8 py-5 mx-10 sm:ml-64 sm:mr-10">
-    <h1 class="text-2xl">Tambah Produk Baru</h1>
+    <h1 class="text-2xl">Edit Data User</h1>
     <br>
     <div class="text-xl flex flex-row items-center gap-4">
-      <a href="../Produk.php" class="text-gray-500">Produk</a>
+      <a href="../Users.php" class="text-gray-500">Users</a>
       <span class="text-gray-500">/</span>
-      <a href="#" class="text-orange-500">Tambah Produk Baru</a>
+      <a href="#" class="text-orange-500">Edit Data User</a>
     </div>
-
-    <!-- Form untuk menambahkan produk baru -->
     <div class="min-h-screen p-6 flex items-center justify-center">
       <div class="container max-w-screen-lg mx-auto">
         <div>
@@ -114,51 +125,46 @@ if (isset($_POST["submit"])) {
           <div class="bg-white rounded shadow-lg p-4 px-4 md:p-8 mb-6">
             <div class="grid gap-4 gap-y-2 text-sm grid-cols-1 lg:grid-cols-3">
               <div class="text-gray-600">
-                <p class="font-medium text-lg">Tambah Produk Baru</p>
+                <p class="font-medium text-lg">Edit Data User</p>
                 <p>Tolong isi semua formnya!</p>
               </div>
 
               <div class="lg:col-span-2">
-                <form method="POST" action="" enctype="multipart/form-data">
+                <form method="POST" action="">
                   <div class="grid gap-4 gap-y-2 text-sm grid-cols-1 md:grid-cols-5">
+                    <input type="hidden" name="id" value="<?php echo htmlspecialchars($karyawan[0]['id']); ?>">
 
                     <div class="md:col-span-5">
-                      <label for="kode_barang">Kode Barang</label>
-                      <?php $kode_barang_baru = generateKodeBarang(); ?>
-                      <input type="text" name="kode_barang" id="kode_barang" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" value="<?php echo $kode_barang_baru; ?>" readonly />
+                      <label for="name">Nama Lengkap</label>
+                      <input type="text" name="name" id="name" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" value="<?php echo htmlspecialchars($karyawan[0]['nama']); ?>" />
                     </div>
 
                     <div class="md:col-span-5">
-                      <label for="nama_barang">Nama Barang</label>
-                      <input type="text" name="nama_barang" id="nama_barang" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" placeholder="Masukkan Nama Barang" required />
+                      <label for="email">Email Address</label>
+                      <input type="text" name="email" id="email" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" value="<?php echo htmlspecialchars($karyawan[0]['email']); ?>" placeholder="email@domain.com" />
                     </div>
 
-                    <div class="md:col-span-5">
-                      <label for="expired">Tanggal Expired</label>
-                      <input type="date" name="expired" id="expired" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" required />
+                    <div class="md:col-span-3">
+                      <label for="no_hp">Nomor Telepon</label>
+                      <input type="number" name="no_hp" id="no_hp" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" value="<?php echo htmlspecialchars($karyawan[0]['no_hp']); ?>" placeholder="" />
                     </div>
 
-                    <div class="md:col-span-5">
-                      <label for="harga">Harga</label>
-                      <input type="number" name="harga" id="harga" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" placeholder="Masukkan Harga" required />
+                    <div class="md:col-span-2">
+                      <label for="role">Role</label>
+                      <select name="role" id="role" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50">
+                        <?php foreach ($roles as $role) : ?>
+                          <option value="<?php echo $role ?>" <?php echo ($role == htmlspecialchars($karyawan[0]['role']))? 'selected' : ''; ?> >
+                            <?php echo htmlspecialchars($role); ?>
+                          </option>
+                        <?php endforeach; ?>
+                      </select>
                     </div>
 
-                    <div class="md:col-span-5">
-                      <label for="stok">Stok</label>
-                      <input type="number" name="stok" id="stok" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" placeholder="Masukkan Stok" required />
-                    </div>
-
-                    <div class="md:col-span-5">
-                      <br>
-                      <img id="previewImg" src="#" alt="Preview Gambar" width="100" style="display: none;"> <br>
-                      <label class="block mb-2 text-sm font-medium text-gray-900" for="file_input">Upload file</label>
-                      <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" aria-describedby="file_input_help" id="gambar" name="gambar" onchange="previewImage(event)" type="file">
-                      <p class="mt-1 text-sm text-gray-500" id="file_input_help">SVG, PNG, or JPG (MAX. 800x400px).</p>
-                    </div>
+                    <br>
 
                     <div class="md:col-span-5 text-right">
                       <div class="inline-flex items-end">
-                        <button type="submit" name="submit" class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded">Tambah Produk</button>
+                        <button type="submit" class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded">Submit</button>
                       </div>
                     </div>
 
@@ -175,19 +181,6 @@ if (isset($_POST["submit"])) {
   <footer class="bg-white w-full sm:pl-8 pl-10 py-5">
     <span class="sm:ml-64">&copy Created by Abhi Surya Nugroho 2024</span>
   </footer>
-
-  <script src="../../assets/js/script.js"></script>
-  <script>
-    function previewImage(event) {
-      var reader = new FileReader();
-      reader.onload = function() {
-        var output = document.getElementById('previewImg');
-        output.src = reader.result;
-        output.style.display = 'block';
-      }
-      reader.readAsDataURL(event.target.files[0]);
-    }
-  </script>
 </body>
 
 </html>
