@@ -93,7 +93,7 @@ $transaksi = query('SELECT transaksi.*,
     </div>
   </aside>
 
-  <div class="sm:pl-8 py-5 mx-10 sm:ml-64 sm:mr-10">
+  <div class="sm:pl-8 py-5 sm:ml-64 sm:mr-10">
     <h1 class="text-2xl">Transaksi</h1>
     <br>
     <div class="text-xl flex flex-row items-center gap-4">
@@ -102,16 +102,16 @@ $transaksi = query('SELECT transaksi.*,
     </div>
     <br>
     <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-      <div class="relative">
-        <input placeholder="Search..." class="input shadow-lg focus:border-2 border-gray-300 px-5 py-3 rounded-xl w-full sm:w-56 transition-all focus:w-64 outline-none" name="search" type="search" />
-        <svg class="size-6 absolute top-3 right-3 text-gray-500" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <form method="post" class="relative">
+        <input placeholder="Search..." class="input shadow-lg focus:border-2 border-gray-300 pl-10 pr-5 py-3 rounded-xl w-full sm:w-56 transition-all focus:w-64 outline-none" name="keyword" id="keyword" type="search" value="<?= htmlspecialchars($keyword ?? '') ?>" />
+        <svg class="size-6 absolute top-3 left-3 text-gray-500" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" stroke-linejoin="round" stroke-linecap="round"></path>
         </svg>
-      </div>
-
+        <button type="submit" name="cari" class="sr-only">Search</button>
+      </form>
     </div>
     <br>
-
+    <br>
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
       <table class="w-full text-sm text-left rtl:text-right text-gray-500">
         <thead class="text-xs text-gray-700 uppercase bg-gray-50">
@@ -134,33 +134,37 @@ $transaksi = query('SELECT transaksi.*,
             <th scope="col" class="px-6 py-3 text-center">
               Total Harga
             </th>
+            <th scope="col" class="px-6 py-3 text-center">
+              Detail
+            </th>
           </tr>
         </thead>
         <?php $i = 1; ?>
-        <?php foreach ($transaksi as $row) : ?>
-          <tbody>
-            <tr class="bg-white border-b hover:bg-gray-50">
-              <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                <?= $i++ ?>
-              </th>
-              <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap text-center">
-                <?= $row['id'] ?>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <?= $row['nama_pelanggan'] ?>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <?= $row['nama_kasir'] ?>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <?= $row['tanggal_transaksi'] ?>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <?php echo 'Rp ' . number_format($row['total_harga'], 0, ',', '.'); ?>
-              </td>
-            </tr>
-          </tbody>
-        <?php endforeach; ?>
+        <tbody>
+          <tr class="bg-white border-b hover:bg-gray-50">
+            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+              <?= $i++ ?>
+            </th>
+            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap text-center">
+              1
+            </td>
+            <td class="px-6 py-4 text-center">
+              Abhi Surya Nugroho
+            </td>
+            <td class="px-6 py-4 text-center">
+              Muhammad Ghiffari
+            </td>
+            <td class="px-6 py-4 text-center">
+              20-12-2024
+            </td>
+            <td class="px-6 py-4 text-center">
+              Rp 16.000
+            </td>
+            <td class="px-6 py-4 text-blue-400 text-center">
+              <a href="Transaksi/DetailTransaksi.php" class="hover:underline">Detail Transaksi</a>
+            </td>
+          </tr>
+        </tbody>
       </table>
     </div>
   </div>

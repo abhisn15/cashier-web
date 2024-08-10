@@ -57,7 +57,7 @@ if (isset($_POST['submit'])) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuperAdmin | Edit Produk</title>
+  <title>Staff | Edit Produk</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- <link rel="stylesheet" href="../../assets/css/style.css" /> -->
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>

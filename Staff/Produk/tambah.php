@@ -37,7 +37,7 @@ if (isset($_POST["submit"])) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuperAdmin | Tambah Produk</title>
+  <title>Staff | Tambah Produk</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
@@ -117,10 +117,10 @@ if (isset($_POST["submit"])) {
                       <input type="text" name="nama_barang" id="nama_barang" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" placeholder="Masukkan Nama Barang" required />
                     </div>
 
-                    <div class="md:col-span-5">
+                    <!-- <div class="md:col-span-5">
                       <label for="expired">Tanggal Expired</label>
-                      <input type="date" name="expired" id="expired" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" required />
-                    </div>
+                      <input type="date" name="expired" id="expired" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" />
+                    </div> -->
 
                     <div class="md:col-span-5">
                       <label for="harga">Harga</label>

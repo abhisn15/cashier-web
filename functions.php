@@ -304,7 +304,7 @@ function tambahProduk($data)
   // Generate kode barang baru
   $kode_barang = generateKodeBarang();
   $nama_barang = htmlspecialchars($data["nama_barang"]);
-  $expired = htmlspecialchars($data["expired"]);
+  $expired = htmlspecialchars($data["expired"] ?? '');
   $harga = htmlspecialchars($data["harga"]);
   $stok = htmlspecialchars($data["stok"]);
   $gambar = upload(); // Menggunakan fungsi upload untuk mendapatkan nama file
@@ -314,7 +314,7 @@ function tambahProduk($data)
   }
 
   $query = "INSERT INTO barang (kode_barang, nama_barang, expired, harga, stok, gambar) 
-              VALUES ('$kode_barang', '$nama_barang', '$expired', '$harga', '$stok', '$gambar')";
+              VALUES ('$kode_barang', '$nama_barang', NULL, '$harga', '$stok', '$gambar')";
 
   mysqli_query($conn, $query);
 
@@ -405,7 +405,7 @@ function register($conn)
         if (mysqli_stmt_execute($stmt)) {
           echo
           "<script>
-                        alert('User berhasil ditambahkan');
+                        alert('Registrasi berhasil silahkan login');
                         window.location.href = 'login.php';
                     </script>";
         } else {

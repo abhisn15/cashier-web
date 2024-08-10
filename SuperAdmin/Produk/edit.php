@@ -93,7 +93,7 @@ if (isset($_POST['submit'])) {
           </a>
         </li>
         <li>
-          <button type="button" class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-orange-400 hover:text-white" onclick="location.href = 'Users.php'">
+          <button type="button" class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-orange-400 hover:text-white" onclick="location.href = '../Users.php'">
             <ion-icon name="people-sharp" class="text-2xl"></ion-icon>
             <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">Users</span>
             <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">

@@ -48,7 +48,7 @@ if (isset($_POST["cari"])) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuperAdmin | Dashboard</title>
+  <title>Kasir | Toko</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
   <link rel="stylesheet" href="../assets/css/style.css" />
@@ -117,9 +117,9 @@ if (isset($_POST["cari"])) {
         </svg>
         <button type="submit" name="cari" class="sr-only">Search</button>
       </form>
-      <div class="relative" onclick="location.href = 'Keranjang.php'">
+      <div class="relative" onclick="location.href = 'Toko/Keranjang.php'">
         <button id="basket-button" class="absolute right-0 sm:relative">
-          <ion-icon name="basket-sharp" class="text-orange-400 w-10 h-10"></ion-icon>
+          <ion-icon name="cart-sharp" class="text-orange-400 w-10 h-10"></ion-icon>
         </button>
         <!-- Notifikasi jumlah item dalam keranjang -->
         <span id="cart-count" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">1</span>

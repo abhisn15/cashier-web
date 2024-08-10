@@ -1,16 +1,21 @@
 <?php
-require '../functions.php';
+require '../../functions.php';
 session_start();
 
 $username = $_SESSION['nama'];
 $role = $_SESSION['role'];
 
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || isset($_SESSION['Kasir'])) {
-  header('Location: ../login.php');
+  header('Location: ../../login.php');
 }
 
 $keranjang = query('SELECT * FROM barang WHERE id = 1');
 $pelanggan = query('SELECT * FROM users WHERE role IN ("User")');
+
+$totalHarga = 0;
+foreach ($keranjang as $row) {
+  $totalHarga += $row['harga']; // Inisialisasi total harga keseluruhan
+}
 ?>
 
 <!DOCTYPE html>
@@ -43,7 +48,7 @@ $pelanggan = query('SELECT * FROM users WHERE role IN ("User")');
     <div class="h-full px-3 pb-4 overflow-y-auto bg-white rounded-2xl bg-gray-800 border-r-2">
       <ul class="space-y-2 font-medium">
         <li>
-          <a href="Dashboard.php" class="flex items-center p-2 rounded-lg text-gray-900 hover:text-white hover:bg-orange-400 group">
+          <a href="../Dashboard.php" class="flex items-center p-2 rounded-lg text-gray-900 hover:text-white hover:bg-orange-400 group">
             <ion-icon name="home-sharp" class="text-gray-900 group-hover:text-white text-2xl"></ion-icon>
             <span class="ms-3">Dashboard</span>
           </a>
@@ -57,13 +62,13 @@ $pelanggan = query('SELECT * FROM users WHERE role IN ("User")');
           </a>
         </li>
         <li>
-          <a href="Transaksi.php" class="flex items-center p-2 rounded-lg text-gray-900 hover:text-white hover:bg-orange-400 group">
+          <a href="../Transaksi.php" class="flex items-center p-2 rounded-lg text-gray-900 hover:text-white hover:bg-orange-400 group">
             <ion-icon name="card-sharp" class="text-2xl"></ion-icon>
             <span class=" flex-1 ms-3 whitespace-nowrap">Transaksi</span>
           </a>
         </li>
         <li>
-          <a href="../logout.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:text-white hover:bg-red-600 group">
+          <a href="../../logout.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:text-white hover:bg-red-600 group">
             <ion-icon name="log-out-sharp" class="text-2xl"></ion-icon>
             <span class="flex-1 ms-3 whitespace-nowrap">Logout</span>
           </a>
@@ -71,18 +76,18 @@ $pelanggan = query('SELECT * FROM users WHERE role IN ("User")');
       </ul>
     </div>
   </aside>
-
+  <!-- Sidebar dan lainnya -->
   <div class="sm:pl-8 py-5 sm:ml-64 sm:mr-10">
     <h1 class="text-2xl">Keranjang</h1>
     <br>
     <div class="text-xl flex flex-row items-center gap-4">
-      <a href="Toko.php" class="text-gray-500">Toko</a>
+      <a href="../Toko.php" class="text-gray-500">Toko</a>
       <span class="text-gray-500">/</span>
       <a href="#" class="text-orange-500">Keranjang</a>
     </div>
     <br>
 
-    <div class="relative overflow-x-auto shadow-md sm:rounded-lg ">
+    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
       <table class="w-full text-sm text-left rtl:text-right text-gray-500">
         <thead class="text-xs text-gray-700 uppercase bg-gray-50">
           <tr>
@@ -94,17 +99,18 @@ $pelanggan = query('SELECT * FROM users WHERE role IN ("User")');
           </tr>
         </thead>
         <tbody>
-          <?php $i = 1; ?>
+          <!-- Loop untuk menampilkan item di keranjang -->
           <?php foreach ($keranjang as $row) : ?>
             <tr class="bg-white border-b hover:bg-gray-50">
               <td class="px-6 py-4 text-black flex flex-row items-center gap-2 w-80">
-                <img src="../assets/img/<?= htmlspecialchars($row['gambar']) ?>" alt="<?= htmlspecialchars($row['nama']) ?>" width="100">
+                <img src="../../assets/img/<?= htmlspecialchars($row['gambar']) ?>" alt="<?= htmlspecialchars($row['nama']) ?>" width="100">
                 <span><?= htmlspecialchars($row['nama_barang']) ?></span>
               </td>
-              <td class="px-6 py-4 text-center harga-satuan" data-harga="<?= $row['harga'] ?>"> <?php echo 'Rp ' . number_format($row['harga'], 0, ',', '.'); ?></td>
-
+              <td class="px-6 py-4 text-center harga-satuan" data-harga="<?= $row['harga'] ?>">
+                <?php echo 'Rp ' . number_format($row['harga'], 0, ',', '.'); ?>
+              </td>
               <td class="px-6 py-4 text-center">
-                <div class="relative flex items-center max-w-[20rem]">
+                <div class="relative lg:flex items-center max-w-[20rem]">
                   <button type="button" class="decrement-button bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-s-lg p-3 h-11 focus:ring-gray-100 focus:ring-2 focus:outline-none">
                     <svg class="w-3 h-3 text-gray-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 2">
                       <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h16" />
@@ -126,15 +132,14 @@ $pelanggan = query('SELECT * FROM users WHERE role IN ("User")');
                 <a onclick="return confirm('Apakah kamu yakin ingin menghapus barang ini di keranjang?');" href="./Users/hapus.php?id=<?= htmlspecialchars($row['id']) ?>" class="font-medium text-red-600 hover:underline">Hapus</a>
               </td>
             </tr>
-            <?php $i++ ?>
           <?php endforeach; ?>
         </tbody>
       </table>
     </div>
     <br>
-    <div class="bg-white shadow-md border-2 rounded-xl py-5 px-10 flex flex-row items-center justify-between gap-10">
+    <div class="bg-white shadow-md border-2 rounded-xl py-5 px-10 flex flex-wrap items-center justify-between gap-5">
       <div class="w-80">
-        <label for="">Jika pelanggan belum terdaftar abaikan!</label>
+        <label for="pelanggan">Jika pelanggan belum terdaftar abaikan!</label>
         <select name="pelanggan" id="pelanggan" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50">
           <option value="">Pilih Pelanggan</option>
           <?php foreach ($pelanggan as $option_pelanggan) : ?>
@@ -145,7 +150,12 @@ $pelanggan = query('SELECT * FROM users WHERE role IN ("User")');
         </select>
       </div>
       <span>Total Produk(1)</span>
-      <span id="total-harga-keseluruhan">Total Harga: <?php echo 'Rp ' . number_format($row['harga'], 0, ',', '.'); ?></span>
+      <div class="md:col-span-5">
+        <label for="tunai">Tunai</label>
+        <input type="text" name="tunai" id="tunai" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" placeholder="Masukkan Tunai" value="Rp 0" required />
+      </div>
+      <span id="total-harga-keseluruhan">Total Harga: <?php echo 'Rp ' . number_format($totalHarga, 0, ',', '.'); ?></span>
+      <span id="kembalian">Kembalian: Rp 0</span>
       <button class="bg-orange-400 hover:bg-orange-600 py-3 px-10 text-center rounded-md text-white">
         Checkout
       </button>
@@ -157,90 +167,71 @@ $pelanggan = query('SELECT * FROM users WHERE role IN ("User")');
   </footer>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      function updateTotalHargaKeseluruhan() {
-        let totalHargaKeseluruhan = 0;
+    const tunaiInput = document.getElementById('tunai');
+    let totalHarga = <?= $totalHarga ?>; // Initial total price
+    const kembalianElement = document.getElementById('kembalian');
 
-        // Iterate over all rows to sum up the total prices
-        document.querySelectorAll('tbody tr').forEach(function(row) {
-          const totalHargaElement = row.querySelector('.total-harga');
-          const totalHarga = parseInt(totalHargaElement.textContent.replace(/[^0-9]/g, ''), 10);
-          totalHargaKeseluruhan += totalHarga;
-        });
+    // Format angka ke Rupiah
+    function formatRupiah(angka) {
+      return `Rp ${angka.toLocaleString('id-ID')}`;
+    }
 
-        // Update the total harga keseluruhan
-        document.getElementById('total-harga-keseluruhan').textContent = 'Total Harga: Rp ' + totalHargaKeseluruhan.toLocaleString('id-ID');
+    function updateKembalian() {
+      const tunai = parseInt(tunaiInput.value.replace(/[^0-9]/g, '')) || 0; // Menghapus format Rupiah
+      const kembalian = tunai - totalHarga;
+      kembalianElement.textContent = `Kembalian: ${formatRupiah(kembalian)}`;
+    }
+
+    tunaiInput.addEventListener('input', function() {
+      const rawValue = tunaiInput.value.replace(/[^0-9]/g, ''); // Menghapus format Rupiah
+      if (rawValue === '') {
+        tunaiInput.value = 'Rp 0';
+      } else {
+        tunaiInput.value = formatRupiah(parseInt(rawValue));
       }
-
-      // Pilih semua baris pada tabel
-      document.querySelectorAll('tbody tr').forEach(function(row) {
-        const incrementButton = row.querySelector('.increment-button');
-        const decrementButton = row.querySelector('.decrement-button');
-        const quantityInput = row.querySelector('.quantity-input');
-        const hargaSatuanElement = row.querySelector('.harga-satuan');
-        const totalHargaElement = row.querySelector('.total-harga');
-
-        const hargaSatuan = parseInt(hargaSatuanElement.dataset.harga, 10);
-
-        function updateTotal() {
-          let quantity = parseInt(quantityInput.value, 10);
-
-          // Periksa apakah kuantitas kurang dari 1
-          if (quantity < 1) {
-            if (confirm('Apakah kamu ingin menghapus barang ini dari keranjang?')) {
-              // Redirect untuk hapus item
-              window.location.href = "./Users/hapus.php?id=<?= htmlspecialchars($row['id']) ?>";
-              return;
-            } else {
-              quantity = 1;
-              quantityInput.value = quantity;
-            }
-          }
-
-          // Update total harga
-          const total = hargaSatuan * quantity;
-          totalHargaElement.textContent = 'Rp ' + total.toLocaleString('id-ID');
-
-          // Update total harga keseluruhan
-          updateTotalHargaKeseluruhan();
-        }
-
-        // Event listener untuk tombol increment
-        incrementButton.addEventListener('click', function() {
-          let quantity = parseInt(quantityInput.value, 10);
-          quantity += 1;
-          quantityInput.value = quantity;
-          updateTotal();
-        });
-
-        // Event listener untuk tombol decrement
-        decrementButton.addEventListener('click', function() {
-          let quantity = parseInt(quantityInput.value, 10);
-          quantity -= 1;
-          quantityInput.value = quantity;
-          updateTotal();
-        });
-
-        // Event listener untuk perubahan manual pada input quantity
-        quantityInput.addEventListener('input', function() {
-          let quantity = parseInt(quantityInput.value, 10);
-
-          // Pastikan quantity tidak kurang dari 1
-          if (quantity < 1 || isNaN(quantity)) {
-            quantity = 1;
-          }
-
-          quantityInput.value = quantity;
-          updateTotal();
-        });
-
-        // Inisialisasi total harga saat halaman pertama kali dimuat
-        updateTotal();
-      });
-
-      // Inisialisasi total harga keseluruhan saat halaman pertama kali dimuat
-      updateTotalHargaKeseluruhan();
+      updateKembalian();
     });
+
+    function updateTotalHarga() {
+      totalHarga = 0; // Reset totalHarga
+      document.querySelectorAll('.total-harga').forEach(function(element) {
+        const harga = parseInt(element.getAttribute('data-total'));
+        totalHarga += harga;
+      });
+      document.getElementById('total-harga-keseluruhan').textContent = `Total Harga: ${formatRupiah(totalHarga)}`;
+      updateKembalian();
+    }
+
+    document.querySelectorAll('.decrement-button').forEach((button, index) => {
+      button.addEventListener('click', function() {
+        let quantity = parseInt(document.querySelectorAll('.quantity-input')[index].value);
+        if (quantity > 1) {
+          quantity -= 1;
+          document.querySelectorAll('.quantity-input')[index].value = quantity;
+          const hargaSatuan = parseInt(document.querySelectorAll('.harga-satuan')[index].getAttribute('data-harga'));
+          const totalHargaBarang = quantity * hargaSatuan;
+          document.querySelectorAll('.total-harga')[index].textContent = formatRupiah(totalHargaBarang);
+          document.querySelectorAll('.total-harga')[index].setAttribute('data-total', totalHargaBarang);
+          updateTotalHarga();
+        }
+      });
+    });
+
+    document.querySelectorAll('.increment-button').forEach((button, index) => {
+      button.addEventListener('click', function() {
+        let quantity = parseInt(document.querySelectorAll('.quantity-input')[index].value);
+        quantity += 1;
+        document.querySelectorAll('.quantity-input')[index].value = quantity;
+        const hargaSatuan = parseInt(document.querySelectorAll('.harga-satuan')[index].getAttribute('data-harga'));
+        const totalHargaBarang = quantity * hargaSatuan;
+        document.querySelectorAll('.total-harga')[index].textContent = formatRupiah(totalHargaBarang);
+        document.querySelectorAll('.total-harga')[index].setAttribute('data-total', totalHargaBarang);
+        updateTotalHarga();
+      });
+    });
+
+    // Format default untuk tunai adalah Rp 0
+    tunaiInput.value = formatRupiah(0);
   </script>
 
 </body>

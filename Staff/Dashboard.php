@@ -17,7 +17,7 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || isset($_SESSION
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuperAdmin | Dashboard</title>
+  <title>Staff | Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
   <link rel="stylesheet" href="../assets/css/style.css" />
@@ -99,7 +99,7 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || isset($_SESSION
             </div>
             <br>
             <div class="flex flex-row items-center gap-5">
-              <ion-icon name="people-sharp" class="rounded-full p-2 bg-blue-400 text-white text-4xl"></ion-icon>
+              <ion-icon name="git-merge-sharp" class="rounded-full p-2 bg-blue-400 text-white text-4xl"></ion-icon>
               <span class="text-xl text-gray-500 font-medium">100 Stok</span>
             </div>
           </div>

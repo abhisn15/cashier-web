@@ -46,7 +46,7 @@ if (isset($_POST["cari"])) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuperAdmin | Produk</title>
+  <title>Staff | Produk</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
   <link rel="stylesheet" href="../assets/css/style.css" />
@@ -112,7 +112,7 @@ if (isset($_POST["cari"])) {
         <span class="absolute top-0 left-0 w-full h-full bg-orange-400"></span>
         <div class="flex flex-row items-center gap-2">
           <ion-icon name="add-sharp" class="text-sm sm:text-2xl text-white font-extrabold"></ion-icon>
-          <span class="relative z-10 text-[12px] sm:text-sm">Tambah Barang</span>
+          <span class="relative z-10 text-[12px] sm:text-sm">Tambah Produk</span>
         </div>
       </button>
     </div>
@@ -169,7 +169,7 @@ if (isset($_POST["cari"])) {
                 <?php echo 'Rp ' . number_format($row['harga'], 0, ',', '.'); ?>
               </td>
               <td class="px-6 py-4 text-center">
-                <?= $row['expired'] ?>
+                <?= $row['expired'] ?? 'Produk ini tidak ada kadaluarsa' ?>
               </td>
               <td class="px-6 py-4 text-center">
                 <?= $row['stok'] ?>
