@@ -5,10 +5,16 @@ session_start();
 $username = $_SESSION['nama'];
 $role = $_SESSION['role'];
 
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || isset($_SESSION['Kasir'])) {
-  header('Location: ../login.php');
+$cartCount = 0;
+
+if (isset($_SESSION['keranjang'])) {
+  $cartCount = array_sum($_SESSION['keranjang']);
 }
 
+if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Kasir') {
+  header('Location: ../login.php');
+  exit();
+}
 // Fungsi untuk mencari data pengguna berdasarkan keyword
 function cari($keyword)
 {
@@ -122,7 +128,10 @@ if (isset($_POST["cari"])) {
           <ion-icon name="cart-sharp" class="text-orange-400 w-10 h-10"></ion-icon>
         </button>
         <!-- Notifikasi jumlah item dalam keranjang -->
-        <span id="cart-count" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">1</span>
+        <span id="cart-count" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
+          <?php echo htmlspecialchars($cartCount); ?>
+        </span>
+
       </div>
     </div>
     <br>
@@ -142,7 +151,7 @@ if (isset($_POST["cari"])) {
           </div>
           <div class="flex flex-row items-center w-full">
             <span class="text-gray-700 font-bold w-full"> <?php echo 'Rp ' . number_format($p['harga'], 0, ',', '.'); ?></span>
-            <button class="flex flex-row items-center justify-end w-full">
+            <button class="flex flex-row items-center justify-end w-full" onclick="addToCart(<?= $p['id']; ?>)">
               <ion-icon name="add-circle-sharp" class="w-8 h-8 text-orange-400 hover:text-orange-600"></ion-icon>
               <span class="text-sm">Add to cart</span>
             </button>
@@ -170,6 +179,17 @@ if (isset($_POST["cari"])) {
         });
       });
     });
+
+    function addToCart(id) {
+      fetch(`Toko/Keranjang.php?id=${id}`)
+        .then(response => response.text())
+        .then(data => {
+          // Update jumlah item dalam keranjang
+          const cartCount = document.getElementById('cart-count');
+          cartCount.textContent = parseInt(cartCount.textContent) + 1;
+        })
+        .catch(error => console.error('Error:', error));
+    }
   </script>
 </body>
 

@@ -5,11 +5,16 @@ error_reporting(E_ALL);
 require '../../functions.php';
 session_start();
 
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $_SESSION['role'] !== 'SuperAdmin') {
-  header('Location: ../login.php');
-  exit;
-}
 
+$role = $_SESSION['role'];
+
+// Cek apakah user sudah login dan memiliki role SuperAdmin
+if (
+  !isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'SuperAdmin'
+) {
+  header('Location: ../../login.php');
+  exit();
+}
 $staff = query('SELECT id, nama, email, no_hp, role FROM users WHERE id = ' . $_GET['id']);
 $roles = ['User', 'Kasir', 'Staff'];
 

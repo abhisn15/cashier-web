@@ -5,11 +5,13 @@ error_reporting(E_ALL);
 require '../../functions.php';
 session_start();
 
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $_SESSION['role'] !== 'SuperAdmin') {
-  header('Location: ../login.php');
-  exit;
-}
+$role = $_SESSION['role'];
 
+
+if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'SuperAdmin') {
+  header('Location: ../../login.php');
+  exit();
+}
 $karyawan = query('SELECT id, nama, email, no_hp, role FROM users WHERE id = ' . $_GET['id']);
 $roles = ['User', 'Kasir', 'Staff'];
 
@@ -148,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div class="md:col-span-3">
                       <label for="no_hp">Nomor Telepon</label>
-                      <input type="number" name="no_hp" id="no_hp" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" oninput="validatePhoneNumber(this)"  value="<?php echo htmlspecialchars($karyawan[0]['no_hp']); ?>" placeholder="" />
+                      <input type="number" name="no_hp" id="no_hp" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" oninput="validatePhoneNumber(this)" value="<?php echo htmlspecialchars($karyawan[0]['no_hp']); ?>" placeholder="" />
                     </div>
 
                     <div class="md:col-span-2">

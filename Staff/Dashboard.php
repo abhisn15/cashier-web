@@ -5,10 +5,10 @@ session_start();
 $username = $_SESSION['nama'];
 $role = $_SESSION['role'];
 
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || isset($_SESSION['Staff'])) {
+if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Staff') {
   header('Location: ../login.php');
+  exit();
 }
-
 ?>
 
 <!DOCTYPE html>

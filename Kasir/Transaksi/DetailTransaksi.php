@@ -5,8 +5,9 @@ session_start();
 $username = $_SESSION['nama'];
 $role = $_SESSION['role'];
 
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || isset($_SESSION['Kasir'])) {
-  header('Location: ../login.php');
+if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Kasir') {
+  header('Location: ../../login.php');
+  exit();
 }
 
 
@@ -15,7 +16,7 @@ function cari($keyword)
 {
   global $conn;
   $stmt = $conn->prepare("SELECT transaksi.*, users.nama AS judul_buku
-                FROM transaksi INNER JOIN users ON transaksi.id_kasir = users.id LIKE ?");
+                FROM transaksi INNER JOIN users ON transaksi.tanggal_transaksi = transaksi.id LIKE ?");
   $search = "%$keyword%";
   $stmt->bind_param('s', $search);
   $stmt->execute();

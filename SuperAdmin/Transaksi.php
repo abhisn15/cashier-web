@@ -8,10 +8,14 @@ session_start();
 
 $username = $_SESSION['nama'];
 
-// Cek apakah user sudah login dan memiliki peran yang benar
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $_SESSION['role'] !== 'SuperAdmin') {
-  header('Location: ../login.php');
-  exit;
+$role = $_SESSION['role'];
+
+// Cek apakah user sudah login dan memiliki role SuperAdmin
+if (
+  !isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'SuperAdmin'
+) {
+  header('Location: ../../login.php');
+  exit();
 }
 
 // Query untuk mengambil data transaksi

@@ -5,10 +5,10 @@ session_start();
 $username = $_SESSION['nama'];
 $role = $_SESSION['role'];
 
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || isset($_SESSION['Kasir'])) {
-  header('Location: ../login.php');
+if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'User') {
+  header('Location: ../../login.php');
+  exit();
 }
-
 
 // Fungsi untuk mencari data pengguna berdasarkan keyword
 function cari($keyword)

@@ -6,9 +6,10 @@ require '../../functions.php';
 session_start();
 
 // Cek apakah user sudah login dan memiliki role Staff
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $_SESSION['role'] !== 'Staff') {
+if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Staff'
+) {
   header('Location: ../../login.php');
-  exit;
+  exit();
 }
 
 // mengecek tombol submit sudah ditekan atau belum

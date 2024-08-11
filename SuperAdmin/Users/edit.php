@@ -5,9 +5,14 @@ error_reporting(E_ALL);
 require '../../functions.php';
 session_start();
 
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $_SESSION['role'] !== 'SuperAdmin') {
-  header('Location: ../login.php');
-  exit;
+$role = $_SESSION['role'];
+
+// Cek apakah user sudah login dan memiliki role SuperAdmin
+if (
+  !isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'SuperAdmin'
+) {
+  header('Location: ../../login.php');
+  exit();
 }
 
 $karyawan = query('SELECT id, nama, email, no_hp, role FROM users WHERE id = ' . $_GET['id']);
@@ -153,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                       <label for="role">Role</label>
                       <select name="role" id="role" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50">
                         <?php foreach ($roles as $role) : ?>
-                          <option value="<?php echo $role ?>" <?php echo ($role == htmlspecialchars($karyawan[0]['role']))? 'selected' : ''; ?> >
+                          <option value="<?php echo $role ?>" <?php echo ($role == htmlspecialchars($karyawan[0]['role'])) ? 'selected' : ''; ?>>
                             <?php echo htmlspecialchars($role); ?>
                           </option>
                         <?php endforeach; ?>

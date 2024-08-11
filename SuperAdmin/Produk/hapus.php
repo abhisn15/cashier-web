@@ -5,9 +5,11 @@ error_reporting(E_ALL);
 require '../../functions.php';
 session_start();
 
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $_SESSION['role'] !== 'SuperAdmin') {
+$role = $_SESSIONS['role'];
+
+if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'SuperAdmin') {
   header('Location: ../../login.php');
-  exit;
+  exit();
 }
 
 $id = intval($_GET["id"]); // Pastikan $id adalah integer untuk keamanan

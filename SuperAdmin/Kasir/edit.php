@@ -5,9 +5,11 @@ error_reporting(E_ALL);
 require '../../functions.php';
 session_start();
 
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $_SESSION['role'] !== 'SuperAdmin') {
-  header('Location: ../login.php');
-  exit;
+$role = $_SESSION['role'];
+
+if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'SuperAdmin') {
+  header('Location: ../../login.php');
+  exit();
 }
 
 $karyawan = query('SELECT id, nama, email, no_hp, role FROM users WHERE id = ' . $_GET['id']);

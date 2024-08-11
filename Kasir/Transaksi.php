@@ -5,19 +5,34 @@ session_start();
 $username = $_SESSION['nama'];
 $role = $_SESSION['role'];
 
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || isset($_SESSION['Kasir'])) {
+// Pastikan pengguna sudah login dan memiliki role yang sesuai
+if (
+  !isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Kasir'
+) {
   header('Location: ../login.php');
+  exit();
 }
 
+date_default_timezone_set('Asia/Jakarta');
 
-// Fungsi untuk mencari data pengguna berdasarkan keyword
-function cari($keyword)
+// Ambil ID kasir dari session
+$id_kasir = $_SESSION['id'];
+
+// Fungsi untuk mencari data transaksi berdasarkan keyword
+function cari($keyword, $id_kasir)
 {
   global $conn;
-  $stmt = $conn->prepare("SELECT transaksi.*, users.nama AS judul_buku
-                FROM transaksi INNER JOIN users ON transaksi.id_kasir = users.id LIKE ?");
+  $stmt = $conn->prepare("SELECT transaksi.*, 
+                                 pelanggan.nama AS nama_pelanggan, 
+                                 kasir.nama AS nama_kasir
+                          FROM transaksi 
+                          LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
+                          LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
+                          WHERE (transaksi.id LIKE ? 
+                                 OR transaksi.id_kasir LIKE ?)
+                            AND transaksi.id_kasir = ?");
   $search = "%$keyword%";
-  $stmt->bind_param('s', $search);
+  $stmt->bind_param('ssi', $search, $search, $id_kasir);
   $stmt->execute();
   $result = $stmt->get_result();
   return $result->fetch_all(MYSQLI_ASSOC);
@@ -27,21 +42,38 @@ function cari($keyword)
 if (isset($_POST["cari"])) {
   $keyword = trim($_POST["keyword"]);
   if (empty($keyword)) {
-    // Jika keyword kosong, ambil semua data dengan pagination
-    $transaksi = query("SELECT * FROM transaksi");
-    $total = query("SELECT COUNT(*) AS total FROM transaksi")[0]['total'];
+    // Jika keyword kosong, ambil semua data dengan filter ID kasir
+    $transaksi = query("SELECT transaksi.*, 
+                                transaksi.tanggal_transaksi, 
+                                transaksi.total_harga, 
+                                pelanggan.nama AS nama_pelanggan, 
+                                kasir.nama AS nama_kasir
+                         FROM transaksi 
+                         LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
+                         LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
+                         WHERE transaksi.id_kasir = $id_kasir");
+
+    $total = query("SELECT COUNT(*) AS total FROM transaksi WHERE id_kasir = $id_kasir")[0]['total'];
   } else {
     // Jika keyword tidak kosong, cari data yang sesuai
-    $transaksi = cari($keyword);
+    $transaksi = cari($keyword, $id_kasir);
     $total = count($transaksi);
   }
 } else {
-  // Query untuk mengambil data sesuai halaman
-  $transaksi = query("SELECT * FROM transaksi");
-  // Query untuk menghitung total data
-  $total = query("SELECT COUNT(*) AS total FROM transaksi")[0]['total'];
-}
+  // Query untuk mengambil data sesuai ID kasir
+  $transaksi = query("SELECT transaksi.*, 
+                              transaksi.tanggal_transaksi, 
+                              transaksi.total_harga, 
+                              pelanggan.nama AS nama_pelanggan, 
+                              kasir.nama AS nama_kasir
+                       FROM transaksi 
+                       LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
+                       LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
+                       WHERE transaksi.id_kasir = $id_kasir");
 
+  // Query untuk menghitung total data
+  $total = query("SELECT COUNT(*) AS total FROM transaksi WHERE id_kasir = $id_kasir")[0]['total'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -145,42 +177,50 @@ if (isset($_POST["cari"])) {
               Total Harga
             </th>
             <th scope="col" class="px-6 py-3 text-center">
+              Dibayar
+            </th>
+            <th scope="col" class="px-6 py-3 text-center">
               Detail
             </th>
           </tr>
         </thead>
         <?php $i = 1; ?>
-        <tbody>
-          <tr class="bg-white border-b hover:bg-gray-50">
-            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-              <?= $i++ ?>
-            </th>
-            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap text-center">
-              1
-            </td>
-            <td class="px-6 py-4 text-center">
-              Abhi Surya Nugroho
-            </td>
-            <td class="px-6 py-4 text-center">
-              Muhammad Ghiffari
-            </td>
-            <td class="px-6 py-4 text-center">
-              20-12-2024
-            </td>
-            <td class="px-6 py-4 text-center">
-              Rp 16.000
-            </td>
-            <td class="px-6 py-4 text-blue-400 text-center">
-              <a href="Transaksi/DetailTransaksi.php" class="hover:underline">Detail Transaksi</a>
-            </td>
-          </tr>
-        </tbody>
+        <?php foreach ($transaksi as $t) : ?>
+          <tbody>
+            <tr class="bg-white border-b hover:bg-gray-50">
+              <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                <?= $i++ ?>
+              </th>
+              <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap text-center">
+                <?= htmlspecialchars($t['id']) ?>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <?= !empty($t['nama_pelanggan']) ? htmlspecialchars($t['nama_pelanggan']) : 'Pelanggan belum terdaftar!' ?>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <?= htmlspecialchars($t['nama_kasir']) ?>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <?= htmlspecialchars($t['tanggal_transaksi']) ?>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <?= htmlspecialchars($t['total_harga']) ?>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <?= htmlspecialchars($t['tunai']) ?>
+              </td>
+              <td class="px-6 py-4 text-blue-400 text-center">
+                <a href="Transaksi/DetailTransaksi.php?id=<?php echo htmlspecialchars($t['id']) ?>" class="hover:underline">Detail Transaksi</a>
+              </td>
+            </tr>
+          </tbody>
+        <?php endforeach; ?>
       </table>
     </div>
   </div>
 
   <footer class="bg-white w-full sm:pl-8 py-5">
-    <span class="sm:ml-64">&copy Created by Abhi Surya Nugroho 2024</span>
+    <span class="sm:ml-64">&copy Created by Abhi Surya Nugroho <?= date('Y') ?></span>
   </footer>
 
   <script>

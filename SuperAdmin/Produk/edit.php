@@ -6,10 +6,16 @@ error_reporting(E_ALL);
 require '../../functions.php';
 session_start();
 
+$role = $_SESSIONS['role'];
+
+
+
 // Cek apakah user sudah login dan memiliki role SuperAdmin
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $_SESSION['role'] !== 'SuperAdmin') {
-  header('Location: ../login.php');
-  exit;
+if (
+  !isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'SuperAdmin'
+) {
+  header('Location: ../../login.php');
+  exit();
 }
 
 // Ambil ID produk dari URL

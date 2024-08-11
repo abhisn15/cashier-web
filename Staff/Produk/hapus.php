@@ -5,9 +5,9 @@ error_reporting(E_ALL);
 require '../../functions.php';
 session_start();
 
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $_SESSION['role'] !== 'Staff') {
+if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Staff') {
   header('Location: ../../login.php');
-  exit;
+  exit();
 }
 
 $id = intval($_GET["id"]); // Pastikan $id adalah integer untuk keamanan
