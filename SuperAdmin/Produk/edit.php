@@ -6,18 +6,15 @@ error_reporting(E_ALL);
 require '../../functions.php';
 session_start();
 
-$role = $_SESSIONS['role'];
+$role = $_SESSION['role'];
 
-
-
-// Cek apakah user sudah login dan memiliki role SuperAdmin
+// Cek apakah user sudah login dan memiliki role SupperAdmin
 if (
   !isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'SuperAdmin'
 ) {
   header('Location: ../../login.php');
   exit();
 }
-
 // Ambil ID produk dari URL
 $id = $_GET['id'];
 
@@ -29,7 +26,7 @@ if (mysqli_num_rows($produk) === 0) {
   echo "
         <script>
             alert('Produk tidak ditemukan!');
-            document.location.href = 'Produk.php';
+            document.location.href = '../Produk.php';
         </script>
     ";
   exit;
@@ -63,9 +60,9 @@ if (isset($_POST['submit'])) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuperAdmin | Edit Produk</title>
+  <title>Staff | Edit Produk</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <!-- <link rel="stylesheet" href="../../assets/css/style.css" /> -->
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
@@ -160,7 +157,7 @@ if (isset($_POST['submit'])) {
 
                     <div class="md:col-span-5">
                       <label for="expired">Tanggal Expired</label>
-                      <input type="date" name="expired" id="expired" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" value="<?php echo $produk['expired']; ?>" required />
+                      <input type="date" name="expired" id="expired" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" value="<?php echo $produk['expired'] ?? '' ?>" />
                     </div>
 
                     <div class="md:col-span-5">
@@ -202,8 +199,29 @@ if (isset($_POST['submit'])) {
     <span class="sm:ml-64">&copy Created by Abhi Surya Nugroho 2024</span>
   </footer>
 
-  <script src="../../assets/js/script.js"></script>
+  <!-- <script src="../../assets/js/script.js"></script> -->
   <script>
+    var hargaInput = document.getElementById('harga');
+    document.querySelector('form').addEventListener('submit', function(event) {
+      const hargaInput = document.getElementById('harga');
+      // Menghapus format Rupiah menjadi hanya angka
+      const rawValue = hargaInput.value.replace(/[^0-9]/g, '');
+      hargaInput.value = parseFloat(rawValue);
+    });
+    // Format angka ke Rupiah
+    function formatRupiah(angka) {
+      return `${angka.toLocaleString('id-ID')}`;
+    }
+    hargaInput.addEventListener('input', function() {
+      const rawValue = hargaInput.value.replace(/[^0-9]/g, ''); // Menghapus format Rupiah
+      if (rawValue === '') {
+        hargaInput.value = '';
+      } else {
+        hargaInput.value = formatRupiah(parseInt(rawValue));
+      }
+    });
+    hargaInput.value = formatRupiah(<?= $produk['harga'] ?>);
+
     function previewImage(event) {
       const reader = new FileReader();
       reader.onload = function() {

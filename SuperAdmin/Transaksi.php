@@ -139,36 +139,44 @@ $transaksi = query('SELECT transaksi.*,
               Total Harga
             </th>
             <th scope="col" class="px-6 py-3 text-center">
+              Dibayar
+            </th>
+            <th scope="col" class="px-6 py-3 text-center">
               Detail
             </th>
           </tr>
         </thead>
         <?php $i = 1; ?>
-        <tbody>
-          <tr class="bg-white border-b hover:bg-gray-50">
-            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-              <?= $i++ ?>
-            </th>
-            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap text-center">
-              1
-            </td>
-            <td class="px-6 py-4 text-center">
-              Abhi Surya Nugroho
-            </td>
-            <td class="px-6 py-4 text-center">
-              Muhammad Ghiffari
-            </td>
-            <td class="px-6 py-4 text-center">
-              20-12-2024
-            </td>
-            <td class="px-6 py-4 text-center">
-              Rp 16.000
-            </td>
-            <td class="px-6 py-4 text-blue-400 text-center">
-              <a href="Transaksi/DetailTransaksi.php" class="hover:underline">Detail Transaksi</a>
-            </td>
-          </tr>
-        </tbody>
+        <?php foreach ($transaksi as $t) : ?>
+          <tbody>
+            <tr class="bg-white border-b hover:bg-gray-50">
+              <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                <?= $i++ ?>
+              </th>
+              <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap text-center">
+                <?= $t['id'] ?>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <?= $t['nama_pelanggan'] ?>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <?= $t['nama_kasir'] ?>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <?= $t['tanggal_transaksi'] ?>
+              </td>
+              <td class="px-6 py-4 text-center w-40">
+                <?php echo 'Rp ' . number_format($t['total_harga'], 0, ',', '.'); ?>
+              </td>
+              <td class="px-6 py-4 text-center w-40">
+                <?php echo 'Rp ' . number_format($t['tunai'], 0, ',', '.'); ?>
+              </td>
+              <td class="px-6 py-4 text-blue-400 text-center">
+                <a href="Transaksi/DetailTransaksi.php" class="hover:underline">Detail Transaksi</a>
+              </td>
+            </tr>
+          </tbody>
+        <?php endforeach; ?>
       </table>
     </div>
   </div>

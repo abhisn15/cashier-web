@@ -5,8 +5,11 @@ error_reporting(E_ALL);
 require '../../functions.php';
 session_start();
 
+$role = $_SESSION['role'];
+
 // Cek apakah user sudah login dan memiliki role Staff
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Staff'
+if (
+  !isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Staff'
 ) {
   header('Location: ../../login.php');
   exit();
@@ -118,10 +121,10 @@ if (isset($_POST["submit"])) {
                       <input type="text" name="nama_barang" id="nama_barang" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" placeholder="Masukkan Nama Barang" required />
                     </div>
 
-                    <!-- <div class="md:col-span-5">
+                    <div class="md:col-span-5">
                       <label for="expired">Tanggal Expired</label>
                       <input type="date" name="expired" id="expired" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" />
-                    </div> -->
+                    </div>
 
                     <div class="md:col-span-5">
                       <label for="harga">Harga</label>
@@ -163,6 +166,27 @@ if (isset($_POST["submit"])) {
 
   <!-- <script src="../../assets/js/script.js"></script> -->
   <script>
+    var hargaInput = document.getElementById('harga');
+    // Format angka ke Rupiah
+    function formatRupiah(angka) {
+      return `${angka.toLocaleString('id-ID')}`;
+    }
+    hargaInput.addEventListener('input', function() {
+      const rawValue = hargaInput.value.replace(/[^0-9]/g, ''); // Menghapus format Rupiah
+      if (rawValue === '') {
+        hargaInput.value = '0';
+      } else {
+        hargaInput.value = formatRupiah(parseInt(rawValue));
+      }
+    });
+    document.querySelector('form').addEventListener('submit', function(event) {
+      const hargaInput = document.getElementById('harga');
+      // Menghapus format Rupiah menjadi hanya angka
+      const rawValue = hargaInput.value.replace(/[^0-9]/g, '');
+      hargaInput.value = parseFloat(rawValue);
+    });
+    hargaInput.value = formatRupiah(0);
+
     function previewImage(event) {
       var reader = new FileReader();
       reader.onload = function() {

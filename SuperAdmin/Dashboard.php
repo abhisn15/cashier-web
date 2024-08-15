@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 require '../functions.php';
 session_start();
 
@@ -13,6 +16,16 @@ if (
   header('Location: ../../login.php');
   exit();
 }
+
+$totalPelanggan = getTotalPelanggan();
+$totalKasir = getTotalKasir();
+$totalStaff = getTotalStaff();
+$totalProduk = getTotalProduk();
+$totalTransaksi = getTotalTransaksi();
+$totalPenghasilan = getTotalPenghasilan();
+$produkTerlaris = getProdukTerlaris();
+$kasirTeraktif = getKasirTeraktif();
+$pelangganTeraktif = getPelangganTeraktif();
 
 ?>
 
@@ -82,7 +95,7 @@ if (
     </div>
   </aside>
 
-  <div class="sm:pl-8 py-5 sm:ml-64 sm:mr-10">
+  <div class="sm:pl-8 py-5 sm:ml-64 sm:mr-10 m-4">
 
     <h3 class="text-md text-gray-500">Selamat Datang, <strong><?= $username; ?>!</strong></h3>
     <br>
@@ -93,10 +106,10 @@ if (
       <span class="text-gray-500">/</span>
     </div>
     <br>
-    <div class="flex flex-col min-[1400px]:flex-row gap-10">
+    <div class="flex flex-col gap-10">
       <div class="flex flex-col items-center gap-10">
-        <div class="flex flex-wrap items-center justify-center xl:justify-start gap-10 w-full">
-          <div class="py-4 px-6 bg-white rounded-xl shadow-xl w-full xl:w-[47%] border-orange-400 hover:scale-105 border-0 duration-200 hover:border-b-4 hover:border-r-4">
+        <div class="flex flex-col items-center justify-center xl:justify-start gap-10 w-full">
+          <div class="py-4 px-6 bg-white rounded-xl shadow-xl w-full xl:w-[100%] border-orange-400 hover:scale-105 border-0 duration-200 hover:border-b-4 hover:border-r-4">
             <div class="flex flex-row justify-between items-center">
               <span class="text-md text-orange-400">Total Pelanggan Terdaftar</span>
               <div class="flex items-center">
@@ -120,10 +133,10 @@ if (
             <br>
             <div class="flex flex-row items-center gap-5">
               <ion-icon name="person-sharp" class="rounded-full p-2 bg-orange-400 text-white text-4xl"></ion-icon>
-              <span class="text-xl text-gray-500 font-medium">10 Pelanggan</span>
+              <span class="text-xl text-gray-500 font-medium"><?= $totalPelanggan ?> Pelanggan</span>
             </div>
           </div>
-          <div class="py-4 px-6 bg-white rounded-xl shadow-xl w-full xl:w-[47%] border-orange-400 hover:scale-105 duration-200 hover:border-b-4 hover:border-r-4 border-0">
+          <div class="py-4 px-6 bg-white rounded-xl shadow-xl w-full xl:w-[100%] border-orange-400 hover:scale-105 duration-200 hover:border-b-4 hover:border-r-4 border-0">
             <div class="flex flex-row justify-between items-center">
               <span class="text-md text-blue-400">Total Kasir</span>
               <div class="flex items-center">
@@ -147,10 +160,10 @@ if (
             <br>
             <div class="flex flex-row items-center gap-5">
               <ion-icon name="people-sharp" class="rounded-full p-2 bg-blue-400 text-white text-4xl"></ion-icon>
-              <span class="text-xl text-gray-500 font-medium">4 Kasir</span>
+              <span class="text-xl text-gray-500 font-medium"><?= $totalKasir ?> Kasir</span>
             </div>
           </div>
-          <div class="py-4 px-6 bg-white rounded-xl shadow-xl w-full xl:w-[47%] border-orange-400 hover:scale-105 duration-200 hover:border-b-4 hover:border-r-4 border-0">
+          <div class="py-4 px-6 bg-white rounded-xl shadow-xl w-full xl:w-[100%] border-orange-400 hover:scale-105 duration-200 hover:border-b-4 hover:border-r-4 border-0">
             <div class="flex flex-row justify-between items-center">
               <span class="text-md text-red-400">Total Staff</span>
               <div class="flex items-center">
@@ -174,10 +187,10 @@ if (
             <br>
             <div class="flex flex-row items-center gap-5">
               <ion-icon name="people-sharp" class="rounded-full p-2 bg-red-400 text-white text-4xl"></ion-icon>
-              <span class="text-xl text-gray-500 font-medium">2 Staff</span>
+              <span class="text-xl text-gray-500 font-medium"><?= $totalStaff ?> Staff</span>
             </div>
           </div>
-          <div class="py-4 px-6 bg-white rounded-xl shadow-xl w-full xl:w-[47%] border-orange-400 hover:scale-105 duration-200 hover:border-b-4 hover:border-r-4 border-0">
+          <div class="py-4 px-6 bg-white rounded-xl shadow-xl w-full xl:w-[100%] border-orange-400 hover:scale-105 duration-200 hover:border-b-4 hover:border-r-4 border-0">
             <div class="flex flex-row justify-between items-center">
               <span class="text-md text-orange-800">Total Produk</span>
               <div class="flex items-center">
@@ -201,13 +214,13 @@ if (
             <br>
             <div class="flex flex-row items-center gap-5">
               <ion-icon name="cube" class="rounded-full p-2 bg-orange-800 text-white text-4xl"></ion-icon>
-              <span class="text-xl text-gray-500 font-medium">200 Produk</span>
+              <span class="text-xl text-gray-500 font-medium"><?= $totalProduk ?> Produk</span>
             </div>
           </div>
         </div>
         <div class=" w-full py-4 px-6 bg-white rounded-xl shadow-xl w-full border-orange-400 hover:scale-105 duration-200 hover:border-b-4 hover:border-r-4 border-0">
           <div class="flex flex-row justify-between items-center">
-            <span class="text-md text-green-600">Total Transaksi</span>
+            <span class="text-md text-green-600">Total Transaksi dan Penghasilan</span>
             <div class="flex items-center">
               <div class="flex items-center ms-3">
                 <div>
@@ -230,8 +243,8 @@ if (
           <div class="flex flex-row items-center gap-5">
             <ion-icon name="card-sharp" class="rounded-full p-4 bg-green-600/40 text-green-600 text-4xl"></ion-icon>
             <div class="flex flex-col items-start">
-              <span class="text-xl text-gray-500 font-medium">40 Transaksi</span>
-              <span class="text-md text-gray-400">Penghasilan: Rp 2.000.000</span>
+              <span class="text-xl text-gray-500 font-medium"><?= $totalTransaksi ?> Transaksi</span>
+              <span class="text-md text-gray-400">Penghasilan: Rp <?= number_format($totalPenghasilan, 0, ',', '.') ?></span>
             </div>
           </div>
         </div>
@@ -257,51 +270,27 @@ if (
             </div>
           </div>
           <br>
-          <div class="flex flex-row items-center gap-5">
-            <span class="text-yellow-500">1.</span><img src="https://cdn.onemars.net/sites/whiskas_id_xGoUJ_mwh5/image/mockup_wks_pouch_ad_mackerel_new-look_-80g_f_1705068811793_1705678005614_1709124356942.png" alt="produk-terlaris1" width="100">
-            <div class="flex flex-col items-start">
-              <span class="text-xl text-gray-500 font-medium">Whiskas Wadidaw</span>
-              <span class="text-md text-gray-400">Terjual: 20</span>
-              <span class="text-md text-gray-400">Stok Tersisa: 20</span>
+          <?php $index = 1; ?>
+          <?php foreach ($produkTerlaris as $produk) : ?>
+            <div class="flex flex-row items-center gap-5">
+              <span class="text-yellow-500 text-xl"><?= $index ?>.</span>
+              <div class="flex flex-col items-start">
+                <span class="text-xl text-gray-500 font-medium"><?= $produk['nama_barang'] ?></span>
+                <span class="text-md text-gray-400">Terjual: <?= $produk['total_terjual'] ?> unit</span>
+              </div>
             </div>
-          </div>
-          <br>
-          <div class="flex flex-row items-center gap-5">
-            <span>2.</span><img src="https://cdn.onemars.net/sites/whiskas_id_xGoUJ_mwh5/image/mockup_wks_pouch_ad_mackerel_new-look_-80g_f_1705068811793_1705678005614_1709124356942.png" alt="produk-terlaris1" width="100">
-            <div class="flex flex-col items-start">
-              <span class="text-xl text-gray-500 font-medium">Whiskas Wadidaw</span>
-              <span class="text-md text-gray-400">Terjual: 20</span>
-              <span class="text-md text-gray-400">Stok Tersisa: 20</span>
-            </div>
-          </div>
-          <br>
-          <div class="flex flex-row items-center gap-5">
-            <span>3.</span><img src="https://cdn.onemars.net/sites/whiskas_id_xGoUJ_mwh5/image/mockup_wks_pouch_ad_mackerel_new-look_-80g_f_1705068811793_1705678005614_1709124356942.png" alt="produk-terlaris1" width="100">
-            <div class="flex flex-col items-start">
-              <span class="text-xl text-gray-500 font-medium">Whiskas Wadidaw</span>
-              <span class="text-md text-gray-400">Terjual: 20</span>
-              <span class="text-md text-gray-400">Stok Tersisa: 20</span>
-            </div>
-          </div>
-          <br>
-          <div class="flex flex-row items-center gap-5">
-            <span>4.</span><img src="https://cdn.onemars.net/sites/whiskas_id_xGoUJ_mwh5/image/mockup_wks_pouch_ad_mackerel_new-look_-80g_f_1705068811793_1705678005614_1709124356942.png" alt="produk-terlaris1" width="100">
-            <div class="flex flex-col items-start">
-              <span class="text-xl text-gray-500 font-medium">Whiskas Wadidaw</span>
-              <span class="text-md text-gray-400">Terjual: 20</span>
-              <span class="text-md text-gray-400">Stok Tersisa: 20</span>
-            </div>
-          </div>
+            <?php $index++; ?>
+          <?php endforeach; ?>
         </div>
       </div>
-      <div class="flex flex-col items-center gap-4 w-[100%] xl:w-auto">
-        <div class="rounded-xl shadow-xl py-5 px-8 bg-white w-full xl:w-auto border-orange-400 hover:scale-105 duration-200 hover:border-b-4 hover:border-r-4 border-0">
+      <div class="flex flex-col items-center gap-4 w-full">
+        <div class="rounded-xl shadow-xl py-5 px-8 bg-white w-full border-orange-400 hover:scale-105 duration-200 hover:border-b-4 hover:border-r-4 border-0">
           <div class="flex flex-row justify-between items-center">
-            <h4 class="text-xl text-orange-400">Kasir Teraktif</h4>
+            <h4 class="text-lg text-orange-400">Kasir Teraktif</h4>
             <div class="flex items-center">
               <div class="flex items-center ms-3">
                 <div>
-                  <button type="button" class="flex " aria-expanded="false" data-dropdown-toggle="dropdown-kasir-teraktif">
+                  <button type="button" class="flex" aria-expanded="false" data-dropdown-toggle="dropdown-kasir-teraktif">
                     <span class="sr-only opacity-0">Open user menu</span>
                     <span class="text-gray-300 font-extrabold">...</span>
                   </button>
@@ -317,76 +306,28 @@ if (
             </div>
           </div>
           <br>
-          <div class="flex flex-col items-center gap-3 w-full border-orange-400">
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">1.</span>
-              <span class="flex-1 px-2">Alvaro Mayza</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 10</span>
+          <?php foreach ($kasirTeraktif as $index => $kasir): ?>
+            <div class="flex flex-row items-center gap-5 justify-start w-full max-w-lg text-sm font-medium overflow-x-auto">
+              <span class="text-left text-orange-400 text-xl"><?php echo $index + 1; ?>.</span>
+              <div class="flex flex-col gap-1 ">
+                <span class="text-gray-500 text-xl"><?php echo htmlspecialchars($kasir['nama_kasir']); ?></span>
+                <span class="text-gray-400 text-lg">Total Transaksi: <?php echo htmlspecialchars($kasir['total_transaksi']); ?></span>
+              </div>
             </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">2.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 4</span>
-            </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">3.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 4</span>
-            </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">4.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 3</span>
-            </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">5.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 3</span>
-            </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">6.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 3</span>
-            </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">7.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 2</span>
-            </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">8.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 2</span>
-            </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">9.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 2</span>
-            </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">10.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 1</span>
-            </div>
-          </div>
+            <br>
+          <?php endforeach; ?>
         </div>
-        <div class="rounded-xl shadow-xl py-5 px-8 bg-white w-full xl:w-auto border-orange-400 hover:scale-105 duration-200 hover:border-b-4 hover:border-r-4 border-0">
+      </div>
+
+      <!-- Pelanggan Teraktif -->
+      <div class="flex flex-col items-center gap-4 w-full">
+        <div class="rounded-xl shadow-xl py-5 px-8 bg-white w-full border-orange-400 hover:scale-105 duration-200 hover:border-b-4 hover:border-r-4 border-0">
           <div class="flex flex-row justify-between items-center">
-            <h4 class="text-xl text-orange-400">Pelanggan Teraktif</h4>
+            <h4 class="text-lg text-orange-400">Pelanggan Teraktif</h4>
             <div class="flex items-center">
               <div class="flex items-center ms-3">
                 <div>
-                  <button type="button" class="flex " aria-expanded="false" data-dropdown-toggle="dropdown-pelanggan-teraktif">
+                  <button type="button" class="flex" aria-expanded="false" data-dropdown-toggle="dropdown-pelanggan-teraktif">
                     <span class="sr-only opacity-0">Open user menu</span>
                     <span class="text-gray-300 font-extrabold">...</span>
                   </button>
@@ -402,71 +343,20 @@ if (
             </div>
           </div>
           <br>
-          <div class="flex flex-col items-center gap-3 w-full">
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">1.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 80</span>
+          <?php foreach ($pelangganTeraktif as $index => $pelanggan): ?>
+            <div class="flex flex-row items-center gap-5 justify-start w-full max-w-lg text-sm font-medium overflow-x-auto">
+              <span class="text-left text-orange-400 text-xl"><?php echo $index + 1; ?>.</span>
+              <div class="flex flex-col gap-1 ">
+                <span class="text-gray-500 text-xl"><?php echo htmlspecialchars($pelanggan['nama_pelanggan']); ?></span>
+                <span class="text-gray-400 text-lg">Total Transaksi: <?php echo htmlspecialchars($pelanggan['total_transaksi']); ?></span>
+              </div>
             </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">2.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 4</span>
-            </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">3.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 4</span>
-            </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">4.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 3</span>
-            </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">5.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 3</span>
-            </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">6.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 3</span>
-            </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">7.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 2</span>
-            </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">8.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 2</span>
-            </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">9.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 2</span>
-            </div>
-            <div class="flex justify-between w-full max-w-lg text-sm font-medium">
-              <span class="text-right">10.</span>
-              <span class="flex-1 px-2">Abhi Surya Nugroho</span>
-              <span class="mr-20 lg:mr-auto">|</span>
-              <span class="w-40 text-right">Total Transaksi: 1</span>
-            </div>
-          </div>
+            <br>
+          <?php endforeach; ?>
         </div>
       </div>
     </div>
+  </div>
   </div>
 
   <footer class="bg-white w-full sm:pl-8 py-5">

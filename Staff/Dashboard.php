@@ -9,6 +9,25 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Staf
   header('Location: ../login.php');
   exit();
 }
+
+// Menghitung total stok produk
+$totalStokQuery = "SELECT SUM(stok) AS total_stok FROM barang";
+$totalStokResult = mysqli_query($conn, $totalStokQuery);
+$totalStok = mysqli_fetch_assoc($totalStokResult)['total_stok'];
+
+// Menghitung total produk
+$totalProdukQuery = "SELECT COUNT(*) AS total_produk FROM barang";
+$totalProdukResult = mysqli_query($conn, $totalProdukQuery);
+$totalProduk = mysqli_fetch_assoc($totalProdukResult)['total_produk'];
+
+// Query untuk 3 produk terlaris
+$query_produk_terlaris = "SELECT b.nama_barang, SUM(dt.kuantitas) AS total_terjual
+                          FROM detail_transaksi dt
+                          JOIN barang b ON dt.id_barang = b.id
+                          GROUP BY b.id
+                          ORDER BY total_terjual DESC
+                          LIMIT 3";
+$result_produk_terlaris = mysqli_query($conn, $query_produk_terlaris);
 ?>
 
 <!DOCTYPE html>
@@ -25,7 +44,7 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Staf
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 
-<body class="mx-10">
+<body class="">
   <button data-drawer-target="logo-sidebar" data-drawer-toggle="logo-sidebar" aria-controls="logo-sidebar" type="button" class="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200">
     <span class="sr-only">Open sidebar</span>
     <svg class="w-10 h-10" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -62,7 +81,7 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Staf
     </div>
   </aside>
 
-  <div class="sm:pl-8 py-5 sm:ml-64 sm:mr-10">
+  <div class="sm:pl-8 py-5 sm:ml-64 sm:mr-10 m-4">
 
     <h3 class="text-md text-gray-500">Selamat Datang, <strong><?= $username ?>, Sebagai <?= $role ?> Barang</strong></h3>
     <br>
@@ -100,7 +119,7 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Staf
             <br>
             <div class="flex flex-row items-center gap-5">
               <ion-icon name="git-merge-sharp" class="rounded-full p-2 bg-blue-400 text-white text-4xl"></ion-icon>
-              <span class="text-xl text-gray-500 font-medium">100 Stok</span>
+              <span class="text-xl text-gray-500 font-medium"><?= $totalStok ?> Stok</span>
             </div>
           </div>
           <div class="py-4 px-6 bg-white rounded-xl shadow-xl w-full border-orange-400 hover:scale-105 duration-200 hover:border-b-4 hover:border-r-4 border-0">
@@ -127,7 +146,7 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Staf
             <br>
             <div class="flex flex-row items-center gap-5">
               <ion-icon name="cube" class="rounded-full p-2 bg-orange-800 text-white text-4xl"></ion-icon>
-              <span class="text-xl text-gray-500 font-medium">200 Produk</span>
+              <span class="text-xl text-gray-500 font-medium"><?= $totalProduk ?> Produk</span>
             </div>
           </div>
         </div>
@@ -153,41 +172,17 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Staf
             </div>
           </div>
           <br>
-          <div class="flex flex-row items-center gap-5">
-            <span class="text-yellow-500">1.</span><img src="https://cdn.onemars.net/sites/whiskas_id_xGoUJ_mwh5/image/mockup_wks_pouch_ad_mackerel_new-look_-80g_f_1705068811793_1705678005614_1709124356942.png" alt="produk-terlaris1" width="100">
-            <div class="flex flex-col items-start">
-              <span class="text-xl text-gray-500 font-medium">Whiskas Wadidaw</span>
-              <span class="text-md text-gray-400">Terjual: 20</span>
-              <span class="text-md text-gray-400">Stok Tersisa: 20</span>
+          <?php $index = 1;
+          while ($produk = mysqli_fetch_assoc($result_produk_terlaris)) { ?>
+            <div class="flex flex-row items-center gap-5">
+              <span class="text-yellow-500 text-xl"><?= $index ?>.</span>
+              <div class="flex flex-col items-start">
+                <span class="text-xl text-gray-500 font-medium"><?= $produk['nama_barang'] ?></span>
+                <span class="text-md text-gray-400">Terjual: <?= $produk['total_terjual'] ?> unit</span>
+              </div>
             </div>
-          </div>
-          <br>
-          <div class="flex flex-row items-center gap-5">
-            <span>2.</span><img src="https://cdn.onemars.net/sites/whiskas_id_xGoUJ_mwh5/image/mockup_wks_pouch_ad_mackerel_new-look_-80g_f_1705068811793_1705678005614_1709124356942.png" alt="produk-terlaris1" width="100">
-            <div class="flex flex-col items-start">
-              <span class="text-xl text-gray-500 font-medium">Whiskas Wadidaw</span>
-              <span class="text-md text-gray-400">Terjual: 20</span>
-              <span class="text-md text-gray-400">Stok Tersisa: 20</span>
-            </div>
-          </div>
-          <br>
-          <div class="flex flex-row items-center gap-5">
-            <span>3.</span><img src="https://cdn.onemars.net/sites/whiskas_id_xGoUJ_mwh5/image/mockup_wks_pouch_ad_mackerel_new-look_-80g_f_1705068811793_1705678005614_1709124356942.png" alt="produk-terlaris1" width="100">
-            <div class="flex flex-col items-start">
-              <span class="text-xl text-gray-500 font-medium">Whiskas Wadidaw</span>
-              <span class="text-md text-gray-400">Terjual: 20</span>
-              <span class="text-md text-gray-400">Stok Tersisa: 20</span>
-            </div>
-          </div>
-          <br>
-          <div class="flex flex-row items-center gap-5">
-            <span>4.</span><img src="https://cdn.onemars.net/sites/whiskas_id_xGoUJ_mwh5/image/mockup_wks_pouch_ad_mackerel_new-look_-80g_f_1705068811793_1705678005614_1709124356942.png" alt="produk-terlaris1" width="100">
-            <div class="flex flex-col items-start">
-              <span class="text-xl text-gray-500 font-medium">Whiskas Wadidaw</span>
-              <span class="text-md text-gray-400">Terjual: 20</span>
-              <span class="text-md text-gray-400">Stok Tersisa: 20</span>
-            </div>
-          </div>
+          <?php $index++;
+          } ?>
         </div>
       </div>
     </div>

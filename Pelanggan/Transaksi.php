@@ -28,7 +28,7 @@ function cari($keyword, $id_user)
                           LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
                           WHERE (transaksi.id LIKE ? 
                                  OR transaksi.id_kasir LIKE ?)
-                            AND transaksi.id_kasir = ?");
+                            AND transaksi.id_user = ?");
   $search = "%$keyword%";
   $stmt->bind_param('ssi', $search, $search, $id_user);
   $stmt->execute();
@@ -49,7 +49,7 @@ if (isset($_POST["cari"])) {
                          FROM transaksi 
                          LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
                          LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
-                         WHERE transaksi.id_kasir = $id_user");
+                         WHERE transaksi.id_user = $id_user");
 
     $total = query("SELECT COUNT(*) AS total FROM transaksi WHERE id_kasir = $id_user")[0]['total'];
   } else {
@@ -67,7 +67,7 @@ if (isset($_POST["cari"])) {
                        FROM transaksi 
                        LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
                        LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
-                       WHERE transaksi.id_kasir = $id_user");
+                       WHERE transaksi.id_user = $id_user");
 
   // Query untuk menghitung total data
   $total = query("SELECT COUNT(*) AS total FROM transaksi WHERE id_kasir = $id_user")[0]['total'];
@@ -167,6 +167,9 @@ if (isset($_POST["cari"])) {
               Total Harga
             </th>
             <th scope="col" class="px-6 py-3 text-center">
+              Dibayar
+            </th>
+            <th scope="col" class="px-6 py-3 text-center">
               Detail
             </th>
           </tr>
@@ -190,11 +193,11 @@ if (isset($_POST["cari"])) {
               <td class="px-6 py-4 text-center">
                 <?= htmlspecialchars($t['tanggal_transaksi']) ?>
               </td>
-              <td class="px-6 py-4 text-center">
-                <?= htmlspecialchars($t['total_harga']) ?>
+              <td class="px-6 py-4 text-center w-40">
+                <?php echo 'Rp ' . number_format($t['total_harga'], 0, ',', '.'); ?>
               </td>
-              <td class="px-6 py-4 text-center">
-                <?= htmlspecialchars($t['tunai']) ?>
+              <td class="px-6 py-4 text-center w-40">
+                <?php echo 'Rp ' . number_format($t['tunai'], 0, ',', '.'); ?>
               </td>
               <td class="px-6 py-4 text-blue-400 text-center">
                 <a href="Transaksi/DetailTransaksi.php?id=<?php echo htmlspecialchars($t['id']) ?>" class="hover:underline">Detail Transaksi</a>

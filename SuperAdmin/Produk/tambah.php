@@ -4,10 +4,12 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 require '../../functions.php';
 session_start();
+
 $role = $_SESSION['role'];
 
-// Cek apakah user sudah login dan memiliki role SuperAdmin
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'SuperAdmin'
+// Cek apakah user sudah login dan memiliki role SupperAdmin
+if (
+  !isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'SuperAdmin'
 ) {
   header('Location: ../../login.php');
   exit();
@@ -39,9 +41,8 @@ if (isset($_POST["submit"])) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuperAdmin | Tambah Produk</title>
+  <title>Staff | Tambah Produk</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="../assets/css/style.css" />
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
@@ -70,8 +71,8 @@ if (isset($_POST["submit"])) {
         </li>
         <li>
           <a href="#" class="flex items-center p-2 rounded-lg text-white bg-orange-400 group">
-            <ion-icon name="cube" class="text-gray-900 text-2xl text-white""></ion-icon>
-            <span class=" flex-1 ms-3 whitespace-nowrap">Produk</span>
+            <ion-icon name="cube" class="text-gray-900 text-2xl text-white"></ion-icon>
+            <span class="flex-1 ms-3 whitespace-nowrap">Produk</span>
           </a>
         </li>
         <li>
@@ -137,7 +138,7 @@ if (isset($_POST["submit"])) {
 
                     <div class="md:col-span-5">
                       <label for="expired">Tanggal Expired</label>
-                      <input type="date" name="expired" id="expired" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" required />
+                      <input type="date" name="expired" id="expired" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" />
                     </div>
 
                     <div class="md:col-span-5">
@@ -154,8 +155,8 @@ if (isset($_POST["submit"])) {
                       <br>
                       <img id="previewImg" src="#" alt="Preview Gambar" width="100" style="display: none;"> <br>
                       <label class="block mb-2 text-sm font-medium text-gray-900" for="file_input">Upload file</label>
-                      <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" aria-describedby="file_input_help" id="gambar" name="gambar" onchange="previewImage(event)" type="file">
-                      <p class="mt-1 text-sm text-gray-500" id="file_input_help">SVG, PNG, or JPG (MAX. 800x400px).</p>
+                      <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none" aria-describedby="file_input_help" id="gambar" name="gambar" onchange="previewImage(event)" type="file">
+                      <p class="mt-1 text-sm text-gray-500 dark:text-gray-300" id="file_input_help">SVG, PNG, or JPG (MAX. 800x400px).</p>
                     </div>
 
                     <div class="md:col-span-5 text-right">
@@ -178,8 +179,29 @@ if (isset($_POST["submit"])) {
     <span class="sm:ml-64">&copy Created by Abhi Surya Nugroho 2024</span>
   </footer>
 
-  <script src="../../assets/js/script.js"></script>
+  <!-- <script src="../../assets/js/script.js"></script> -->
   <script>
+    var hargaInput = document.getElementById('harga');
+    // Format angka ke Rupiah
+    function formatRupiah(angka) {
+      return `${angka.toLocaleString('id-ID')}`;
+    }
+    hargaInput.addEventListener('input', function() {
+      const rawValue = hargaInput.value.replace(/[^0-9]/g, ''); // Menghapus format Rupiah
+      if (rawValue === '') {
+        hargaInput.value = '0';
+      } else {
+        hargaInput.value = formatRupiah(parseInt(rawValue));
+      }
+    });
+    document.querySelector('form').addEventListener('submit', function(event) {
+      const hargaInput = document.getElementById('harga');
+      // Menghapus format Rupiah menjadi hanya angka
+      const rawValue = hargaInput.value.replace(/[^0-9]/g, '');
+      hargaInput.value = parseFloat(rawValue);
+    });
+    hargaInput.value = formatRupiah(0);
+
     function previewImage(event) {
       var reader = new FileReader();
       reader.onload = function() {

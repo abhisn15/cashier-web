@@ -194,52 +194,14 @@ function hapusBarang($id)
   return mysqli_affected_rows($conn);
 }
 
-function ubah($data)
-{
-  global $conn;
-
-  $nama_siswa = htmlspecialchars($data["nama_siswa"]);
-  $nisn = htmlspecialchars($data["nisn"]);
-  $nama_jurusan = htmlspecialchars($data["nama_jurusan"]);
-  $kelas = htmlspecialchars($data["kelas"]);
-  $gambarLama = htmlspecialchars($data["gambarLama"]); // Nama gambar lama dari form input hidden
-  $id = intval($data["id"]); // Mendapatkan nilai id dari $data dan pastikan tipe datanya integer
-
-  // Cek apakah user memilih gambar baru atau tidak
-  if (!empty($_FILES['gambar']) && $_FILES['gambar']['error'] !== 4) {
-    $gambar = upload();
-    if ($gambar === false) {
-      // Upload gagal, handle error atau return false
-      return false;
-    }
-  } else {
-    $gambar = $gambarLama;
-  }
-
-  // Menggunakan prepared statements untuk mencegah SQL injection
-  $stmt = $conn->prepare("UPDATE siswa SET nama_siswa = ?, nisn = ?, nama_jurusan = ?, kelas = ?, gambar = ? WHERE id = ?");
-  if (!$stmt) {
-    return false;
-  }
-  // Menggunakan tipe data yang sesuai untuk bind_param
-  $stmt->bind_param("sssssi", $nama_siswa, $nisn, $nama_jurusan, $kelas, $gambar, $id);
-
-  $stmt->execute();
-  $affected_rows = $stmt->affected_rows;
-
-  $stmt->close();
-
-  return $affected_rows;
-}
-
 function editProduk($data, $id)
 {
   global $conn;
 
   $kode_barang = htmlspecialchars($data["kode_barang"]);
   $nama_barang = htmlspecialchars($data["nama_barang"]);
-  $expired = htmlspecialchars($data["expired"]);
-  $harga = htmlspecialchars($data["harga"]);
+  $expired = !empty($data["expired"]) ? "'" . htmlspecialchars($data["expired"]) . "'" : 'NULL';
+  $harga = floatval(str_replace(',', '', $data["harga"]));
   $stok = htmlspecialchars($data["stok"]);
   $gambarLama = htmlspecialchars($data["gambarLama"]);
 
@@ -261,7 +223,7 @@ function editProduk($data, $id)
   $query = "UPDATE barang SET
                 kode_barang = '$kode_barang',
                 nama_barang = '$nama_barang',
-                expired = '$expired',
+                expired = $expired,
                 harga = '$harga',
                 stok = '$stok',
                 gambar = '$gambar'
@@ -304,8 +266,8 @@ function tambahProduk($data)
   // Generate kode barang baru
   $kode_barang = generateKodeBarang();
   $nama_barang = htmlspecialchars($data["nama_barang"]);
-  $expired = htmlspecialchars($data["expired"] ?? '');
-  $harga = htmlspecialchars($data["harga"]);
+  $expired = !empty($data["expired"]) ? htmlspecialchars($data["expired"]) : 'NULL';
+  $harga = floatval(str_replace(',', '', $data["harga"]));
   $stok = htmlspecialchars($data["stok"]);
   $gambar = upload(); // Menggunakan fungsi upload untuk mendapatkan nama file
 
@@ -314,7 +276,7 @@ function tambahProduk($data)
   }
 
   $query = "INSERT INTO barang (kode_barang, nama_barang, expired, harga, stok, gambar) 
-              VALUES ('$kode_barang', '$nama_barang', NULL, '$harga', '$stok', '$gambar')";
+              VALUES ('$kode_barang', '$nama_barang', $expired, '$harga', '$stok', '$gambar')";
 
   mysqli_query($conn, $query);
 
@@ -452,7 +414,7 @@ function login($conn)
     }
 
     if (empty($email_err) && empty($password_err)) {
-      $sql = "SELECT id, nama, email, password, role FROM users WHERE email = ?";
+      $sql = "SELECT id, nama, email, password, role, session_id FROM users WHERE email = ?";
       if ($stmt = mysqli_prepare($conn, $sql)) {
         mysqli_stmt_bind_param($stmt, "s", $param_email);
         $param_email = $email;
@@ -461,16 +423,38 @@ function login($conn)
           mysqli_stmt_store_result($stmt);
 
           if (mysqli_stmt_num_rows($stmt) == 1) {
-            mysqli_stmt_bind_result($stmt, $id, $nama, $email, $hashed_password, $role);
+            mysqli_stmt_bind_result($stmt, $id, $nama, $email, $hashed_password, $role, $session_id);
             if (mysqli_stmt_fetch($stmt)) {
               if (password_verify($password, $hashed_password)) {
-                session_start();
+                // Generate a new session ID
+                $new_session_id = session_id();
+
+                // Check if the user has an active session
+                if ($session_id && $session_id !== $new_session_id) {
+                  // Optionally, you might want to log out the previous session
+                  // Or inform the user
+                  echo "<script>alert('Akun Anda sudah login di perangkat lain.')</script>";
+                  return;
+                }
+
+                // Update the session ID in the database
+                $update_sql = "UPDATE users SET session_id = ? WHERE id = ?";
+                if ($update_stmt = mysqli_prepare($conn, $update_sql)) {
+                  mysqli_stmt_bind_param($update_stmt, "si", $new_session_id, $id);
+                  mysqli_stmt_execute($update_stmt);
+                  mysqli_stmt_close($update_stmt);
+                }
+
+                // Set session variables
                 $_SESSION["login"] = true;
                 $_SESSION["id"] = $id;
                 $_SESSION["nama"] = $nama;
                 $_SESSION["role"] = $role;
+                $_SESSION["session_id"] = $new_session_id; // Store new session ID
+
                 setcookie("nama", $nama, time() + (86400 * 2), "/"); // Cookie berlaku selama 2 hari
 
+                // Redirect based on user role
                 if ($role == 'SuperAdmin') {
                   header("Location: SuperAdmin/Dashboard.php");
                 } elseif ($role == 'Staff') {
@@ -504,4 +488,149 @@ function login($conn)
     'email_err' => $email_err,
     'password_err' => $password_err
   ];
+}
+
+function logout($conn)
+{
+  session_start();
+
+  // Clear session variables
+  $_SESSION = [];
+  session_destroy();
+
+  // Update session_id in database to null
+  if (isset($_SESSION["id"])) {
+    $id = $_SESSION["id"];
+    $sql = "UPDATE users SET session_id = NULL WHERE id = ?";
+    if ($stmt = mysqli_prepare($conn, $sql)) {
+      mysqli_stmt_bind_param($stmt, "i", $id);
+      mysqli_stmt_execute($stmt);
+      mysqli_stmt_close($stmt);
+    }
+  }
+
+  // Redirect to login page or home page
+  header("Location: login.php");
+  exit();
+}
+
+function checkSessionValidity($conn)
+{
+  session_start();
+  if (isset($_SESSION["id"])) {
+    $id = $_SESSION["id"];
+    $current_session_id = session_id();
+
+    // Ambil session_id dari database
+    $sql = "SELECT session_id FROM users WHERE id = ?";
+    if ($stmt = mysqli_prepare($conn, $sql)) {
+      mysqli_stmt_bind_param($stmt, "i", $id);
+      mysqli_stmt_execute($stmt);
+      mysqli_stmt_bind_result($stmt, $session_id);
+      mysqli_stmt_fetch($stmt);
+      mysqli_stmt_close($stmt);
+
+      // Periksa apakah session_id cocok
+      if ($session_id !== $current_session_id) {
+        // Jika tidak cocok, logout pengguna
+        session_unset();
+        session_destroy();
+        header('Location: ./login.php');
+        exit();
+      }
+    }
+  }
+}
+// Fungsi untuk mendapatkan total pelanggan
+function getTotalPelanggan()
+{
+  global $conn;
+  $result = mysqli_query($conn, "SELECT COUNT(*) as total FROM users WHERE role = 'User'");
+  $row = mysqli_fetch_assoc($result);
+  return $row['total'];
+}
+
+// Fungsi untuk mendapatkan total kasir
+function getTotalKasir()
+{
+  global $conn;
+  $result = mysqli_query($conn, "SELECT COUNT(*) as total FROM users WHERE role = 'Kasir'");
+  $row = mysqli_fetch_assoc($result);
+  return $row['total'];
+}
+
+// Fungsi untuk mendapatkan total staff
+function getTotalStaff()
+{
+  global $conn;
+  $result = mysqli_query($conn, "SELECT COUNT(*) as total FROM users WHERE role = 'Staff'");
+  $row = mysqli_fetch_assoc($result);
+  return $row['total'];
+}
+
+// Fungsi untuk mendapatkan total produk
+function getTotalProduk()
+{
+  global $conn;
+  $result = mysqli_query($conn, "SELECT COUNT(*) as total FROM barang");
+  $row = mysqli_fetch_assoc($result);
+  return $row['total'];
+}
+
+// Fungsi untuk mendapatkan total transaksi
+function getTotalTransaksi()
+{
+  global $conn;
+  $result = mysqli_query($conn, "SELECT COUNT(*) as total FROM transaksi");
+  $row = mysqli_fetch_assoc($result);
+  return $row['total'];
+}
+
+// Fungsi untuk mendapatkan total penghasilan
+function getTotalPenghasilan()
+{
+  global $conn;
+  $result = mysqli_query($conn, "SELECT SUM(total_harga) as total_penghasilan FROM transaksi");
+  $row = mysqli_fetch_assoc($result);
+  return $row['total_penghasilan'];
+}
+
+// Fungsi untuk mendapatkan produk terlaris
+function getProdukTerlaris()
+{
+  global $conn;
+  $query = "SELECT b.nama_barang, SUM(dt.kuantitas) AS total_terjual
+                          FROM detail_transaksi dt
+                          JOIN barang b ON dt.id_barang = b.id
+                          GROUP BY b.id
+                          ORDER BY total_terjual DESC
+                          LIMIT 3";
+  return query($query);
+}
+
+// Fungsi untuk mendapatkan kasir teraktif
+function getKasirTeraktif()
+{
+  global $conn;
+  $query = "SELECT u.nama AS nama_kasir, COUNT(*) as total_transaksi 
+              FROM transaksi t
+              JOIN users u ON t.id_kasir = u.id
+              WHERE u.role = 'Kasir'
+              GROUP BY u.id
+              ORDER BY total_transaksi DESC 
+              LIMIT 4";
+  return query($query);
+}
+
+function getPelangganTeraktif()
+{
+  global $conn;
+  $query = "SELECT u.nama AS nama_pelanggan, COUNT(*) as total_transaksi 
+              FROM transaksi t
+              JOIN users u ON t.id_user = u.id
+              WHERE u.role = 'User'
+              GROUP BY u.id
+              ORDER BY total_transaksi DESC 
+              LIMIT 4";
+  return query($query);
 }

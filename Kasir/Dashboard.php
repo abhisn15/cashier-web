@@ -4,11 +4,30 @@ session_start();
 
 $username = $_SESSION['nama'];
 $role = $_SESSION['role'];
+$id_kasir = $_SESSION['id'];
 
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Kasir') {
   header('Location: ../login.php');
   exit();
 }
+
+// Query untuk total transaksi per kasir (berdasarkan id dari session)
+$query_transaksi = "SELECT COUNT(t.id) AS total_transaksi, SUM(t.total_harga) AS total_pendapatan 
+                    FROM transaksi t
+                    WHERE t.id_kasir = '$id_kasir'";
+$result_transaksi = mysqli_query($conn, $query_transaksi);
+$total_transaksi_data = mysqli_fetch_assoc($result_transaksi);
+
+// Query untuk 3 produk terlaris
+$query_produk_terlaris = "SELECT b.nama_barang, SUM(dt.kuantitas) AS total_terjual
+                          FROM detail_transaksi dt
+                          JOIN barang b ON dt.id_barang = b.id
+                          GROUP BY b.id
+                          ORDER BY total_terjual DESC
+                          LIMIT 3";
+$result_produk_terlaris = mysqli_query($conn, $query_produk_terlaris);
+
+checkSessionValidity($conn);
 ?>
 
 <!DOCTYPE html>
@@ -33,7 +52,7 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Kasi
     </svg>
   </button>
 
-  <aside id="logo-sidebar" class="fixed top-0 left-0 z-40 w-64 h-[90dvh] transition-transform -translate-x-full bg-white rounded-2xl shadow-xl sm:translate-x-0 border-r-2" aria-label="Sidebar">
+  <aside id="logo-sidebar" class="fixed top-0 left-0 z-40 w-64 h-[90dvh] transition-transform -translate-x-full bg-white rounded-r-2xl shadow-xl sm:translate-x-0 border-r-2" aria-label="Sidebar">
     <div class="flex flex-row py-5 items-end pl-5 w-full">
       <span class="text-3xl font-bold text-orange-400">Bi</span>
       <span class="text-2xl font-medium">Kasir</span>
@@ -47,11 +66,11 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Kasi
           </a>
         </li>
         <li>
-          <a href="Toko.php" class="flex items-center p-2 rounded-lg text-gray-900 hover:text-white hover:bg-orange-400 group">
+          <a href="Kasir.php" class="flex items-center p-2 rounded-lg text-gray-900 hover:text-white hover:bg-orange-400 group">
             <svg width="26px" height="26px" class="fill-black group-hover:fill-white " viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M22,5H2A1,1,0,0,0,1,6v4a3,3,0,0,0,2,2.82V22a1,1,0,0,0,1,1H20a1,1,0,0,0,1-1V12.82A3,3,0,0,0,23,10V6A1,1,0,0,0,22,5ZM15,7h2v3a1,1,0,0,1-2,0ZM11,7h2v3a1,1,0,0,1-2,0ZM7,7H9v3a1,1,0,0,1-2,0ZM4,11a1,1,0,0,1-1-1V7H5v3A1,1,0,0,1,4,11ZM14,21H10V19a2,2,0,0,1,4,0Zm5,0H16V19a4,4,0,0,0-8,0v2H5V12.82a3.17,3.17,0,0,0,1-.6,3,3,0,0,0,4,0,3,3,0,0,0,4,0,3,3,0,0,0,4,0,3.17,3.17,0,0,0,1,.6Zm2-11a1,1,0,0,1-2,0V7h2ZM4.3,3H20a1,1,0,0,0,0-2H4.3a1,1,0,0,0,0,2Z" />
             </svg>
-            <span class=" flex-1 ms-3 whitespace-nowrap">Toko</span>
+            <span class=" flex-1 ms-3 whitespace-nowrap">Kasir</span>
           </a>
         </li>
         <li>
@@ -108,7 +127,7 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Kasi
             <br>
             <div class="flex flex-row items-center gap-5">
               <ion-icon name="card-sharp" class="rounded-full p-2 bg-green-600 text-white text-4xl"></ion-icon>
-              <span class="text-xl text-gray-500 font-medium">4 Transaksi</span>
+              <span class="text-xl text-gray-500 font-medium"><?= $total_transaksi_data['total_transaksi'] ?> Transaksi</span>
             </div>
           </div>
 
@@ -135,48 +154,24 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Kasi
             </div>
           </div>
           <br>
-          <div class="flex flex-row items-center gap-5">
-            <span class="text-yellow-500">1.</span><img src="https://cdn.onemars.net/sites/whiskas_id_xGoUJ_mwh5/image/mockup_wks_pouch_ad_mackerel_new-look_-80g_f_1705068811793_1705678005614_1709124356942.png" alt="produk-terlaris1" width="100">
-            <div class="flex flex-col items-start">
-              <span class="text-xl text-gray-500 font-medium">Whiskas Wadidaw</span>
-              <span class="text-md text-gray-400">Terjual: 20</span>
-              <span class="text-md text-gray-400">Stok Tersisa: 20</span>
+          <?php $index = 1;
+          while ($produk = mysqli_fetch_assoc($result_produk_terlaris)) { ?>
+            <div class="flex flex-row items-center gap-5">
+              <span class="text-yellow-500 text-xl"><?= $index ?>.</span>
+              <div class="flex flex-col items-start">
+                <span class="text-xl text-gray-500 font-medium"><?= $produk['nama_barang'] ?></span>
+                <span class="text-md text-gray-400">Terjual: <?= $produk['total_terjual'] ?> unit</span>
+              </div>
             </div>
-          </div>
-          <br>
-          <div class="flex flex-row items-center gap-5">
-            <span>2.</span><img src="https://cdn.onemars.net/sites/whiskas_id_xGoUJ_mwh5/image/mockup_wks_pouch_ad_mackerel_new-look_-80g_f_1705068811793_1705678005614_1709124356942.png" alt="produk-terlaris1" width="100">
-            <div class="flex flex-col items-start">
-              <span class="text-xl text-gray-500 font-medium">Whiskas Wadidaw</span>
-              <span class="text-md text-gray-400">Terjual: 20</span>
-              <span class="text-md text-gray-400">Stok Tersisa: 20</span>
-            </div>
-          </div>
-          <br>
-          <div class="flex flex-row items-center gap-5">
-            <span>3.</span><img src="https://cdn.onemars.net/sites/whiskas_id_xGoUJ_mwh5/image/mockup_wks_pouch_ad_mackerel_new-look_-80g_f_1705068811793_1705678005614_1709124356942.png" alt="produk-terlaris1" width="100">
-            <div class="flex flex-col items-start">
-              <span class="text-xl text-gray-500 font-medium">Whiskas Wadidaw</span>
-              <span class="text-md text-gray-400">Terjual: 20</span>
-              <span class="text-md text-gray-400">Stok Tersisa: 20</span>
-            </div>
-          </div>
-          <br>
-          <div class="flex flex-row items-center gap-5">
-            <span>4.</span><img src="https://cdn.onemars.net/sites/whiskas_id_xGoUJ_mwh5/image/mockup_wks_pouch_ad_mackerel_new-look_-80g_f_1705068811793_1705678005614_1709124356942.png" alt="produk-terlaris1" width="100">
-            <div class="flex flex-col items-start">
-              <span class="text-xl text-gray-500 font-medium">Whiskas Wadidaw</span>
-              <span class="text-md text-gray-400">Terjual: 20</span>
-              <span class="text-md text-gray-400">Stok Tersisa: 20</span>
-            </div>
-          </div>
+          <?php $index++;
+          } ?>
         </div>
       </div>
     </div>
   </div>
 
   <footer class="bg-white w-full sm:pl-8 py-5">
-    <span class="sm:ml-64">&copy Created by Abhi Surya Nugroho 2024</span>
+    <span class="sm:ml-64">&copy Created by Abhi Surya Nugroho <?= date('Y') ?></span>
   </footer>
 </body>
 

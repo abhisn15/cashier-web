@@ -3,46 +3,41 @@ require '../functions.php';
 session_start();
 
 $username = $_SESSION['nama'];
-
 $role = $_SESSION['role'];
 
-// Cek apakah user sudah login dan memiliki role SuperAdmin
-if (
-  !isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'SuperAdmin'
-) {
-  header('Location: ../../login.php');
+if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'SuperAdmin') {
+  header('Location: ../login.php');
   exit();
 }
-// Fungsi untuk mencari data produk berdasarkan keyword
-function cari($keyword)
-{
-  global $conn;
-  $search = "%$keyword%";
-  $stmt = $conn->prepare("SELECT * FROM barang WHERE nama_barang LIKE ?");
-  $stmt->bind_param('s', $search);
-  $stmt->execute();
-  $result = $stmt->get_result();
-  return $result->fetch_all(MYSQLI_ASSOC);
-}
 
+// Set jumlah data per halaman
+$limit = 5;
 
-// Mengecek apakah form pencarian telah disubmit
+// Hitung total data
+$total_data = count(query("SELECT * FROM barang"));
+
+// Hitung total halaman
+$total_pages = ceil($total_data / $limit);
+
+// Ambil halaman saat ini, default halaman 1
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+
+// Hitung offset
+$offset = ($page - 1) * $limit;
+
+// Cek apakah pencarian dilakukan
 if (isset($_POST["cari"])) {
   $keyword = trim($_POST["keyword"]);
   if (empty($keyword)) {
-    // Jika keyword kosong, ambil semua data
-    $produk = query("SELECT * FROM barang");
+    $produk = query("SELECT * FROM barang LIMIT $limit OFFSET $offset");
   } else {
-    // Jika keyword tidak kosong, cari data yang sesuai
-    $produk = cari($keyword);
+    $produk = query("SELECT * FROM barang WHERE nama_barang LIKE '%$keyword%' LIMIT $limit OFFSET $offset");
   }
 } else {
-  // Query untuk mengambil semua data saat tidak ada pencarian
-  $produk = query("SELECT * FROM barang");
+  $produk = query("SELECT * FROM barang LIMIT $limit OFFSET $offset");
 }
 
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -50,7 +45,7 @@ if (isset($_POST["cari"])) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuperAdmin | Produk</title>
+  <title>Staff | Produk</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
   <link rel="stylesheet" href="../assets/css/style.css" />
@@ -131,7 +126,7 @@ if (isset($_POST["cari"])) {
         <span class="absolute top-0 left-0 w-full h-full bg-orange-400"></span>
         <div class="flex flex-row items-center gap-2">
           <ion-icon name="add-sharp" class="text-sm sm:text-2xl text-white font-extrabold"></ion-icon>
-          <span class="relative z-10 text-[12px] sm:text-sm">Tambah Barang</span>
+          <span class="relative z-10 text-[12px] sm:text-sm">Tambah Produk</span>
         </div>
       </button>
     </div>
@@ -178,7 +173,7 @@ if (isset($_POST["cari"])) {
               <th scope="row" class="px-6 py-4 font-medium text-gray-900">
                 <?= $row['nama_barang'] ?>
               </th>
-              <td class="px-6 py-4 flex justify-center">
+              <td class="px-6 py-4 flex flex-row justify-center">
                 <img src="../assets/img/<?= $row['gambar'] ?>" alt="<?= $row['nama_barang'] ?>" width="100">
               </td>
               <td class="px-6 py-4 text-center">
@@ -188,7 +183,7 @@ if (isset($_POST["cari"])) {
                 <?php echo 'Rp ' . number_format($row['harga'], 0, ',', '.'); ?>
               </td>
               <td class="px-6 py-4 text-center">
-                <?= $row['expired'] ?>
+                <?= $row['expired'] ?? 'Produk ini tidak ada kadaluarsa' ?>
               </td>
               <td class="px-6 py-4 text-center">
                 <?= $row['stok'] ?>
@@ -203,11 +198,33 @@ if (isset($_POST["cari"])) {
         </tbody>
       </table>
     </div>
+    <div class="flex justify-center mt-5">
+      <nav>
+        <ul class="inline-flex -space-x-px">
+          <?php if ($page > 1): ?>
+            <li>
+              <a href="?page=<?= $page - 1 ?>" class="px-3 py-2 ml-0 leading-tight !text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700">Previous</a>
+            </li>
+          <?php endif; ?>
 
+          <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+            <li>
+              <a href="?page=<?= $i ?>" class="px-3 py-2 leading-tight !text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 <?= $i == $page ? 'bg-orange-400 text-white' : '' ?>"><?= $i ?></a>
+            </li>
+          <?php endfor; ?>
+
+          <?php if ($page < $total_pages): ?>
+            <li>
+              <a href="?page=<?= $page + 1 ?>" class="px-3 py-2 leading-tight !text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700">Next</a>
+            </li>
+          <?php endif; ?>
+        </ul>
+      </nav>
+    </div>
   </div>
 
   <footer class="bg-white w-full sm:pl-8 pl-10 py-5">
-    <span class="sm:ml-64">&copy Created by Abhi Surya Nugroho 2024</span>
+    <span class="sm:ml-64">&copy Created by Abhi Surya Nugroho <?= date('Y') ?></span>
   </footer>
 </body>
 

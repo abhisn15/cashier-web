@@ -3,41 +3,41 @@ require '../functions.php';
 session_start();
 
 $username = $_SESSION['nama'];
+$role = $_SESSION['role'];
 
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Staff') {
   header('Location: ../login.php');
   exit();
 }
-// Fungsi untuk mencari data produk berdasarkan keyword
-function cari($keyword)
-{
-  global $conn;
-  $search = "%$keyword%";
-  $stmt = $conn->prepare("SELECT * FROM barang WHERE nama_barang LIKE ?");
-  $stmt->bind_param('s', $search);
-  $stmt->execute();
-  $result = $stmt->get_result();
-  return $result->fetch_all(MYSQLI_ASSOC);
-}
 
+// Set jumlah data per halaman
+$limit = 5;
 
-// Mengecek apakah form pencarian telah disubmit
+// Hitung total data
+$total_data = count(query("SELECT * FROM barang"));
+
+// Hitung total halaman
+$total_pages = ceil($total_data / $limit);
+
+// Ambil halaman saat ini, default halaman 1
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+
+// Hitung offset
+$offset = ($page - 1) * $limit;
+
+// Cek apakah pencarian dilakukan
 if (isset($_POST["cari"])) {
   $keyword = trim($_POST["keyword"]);
   if (empty($keyword)) {
-    // Jika keyword kosong, ambil semua data
-    $produk = query("SELECT * FROM barang");
+    $produk = query("SELECT * FROM barang LIMIT $limit OFFSET $offset");
   } else {
-    // Jika keyword tidak kosong, cari data yang sesuai
-    $produk = cari($keyword);
+    $produk = query("SELECT * FROM barang WHERE nama_barang LIKE '%$keyword%' LIMIT $limit OFFSET $offset");
   }
 } else {
-  // Query untuk mengambil semua data saat tidak ada pencarian
-  $produk = query("SELECT * FROM barang");
+  $produk = query("SELECT * FROM barang LIMIT $limit OFFSET $offset");
 }
 
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -183,11 +183,33 @@ if (isset($_POST["cari"])) {
         </tbody>
       </table>
     </div>
+    <div class="flex justify-center mt-5">
+      <nav>
+        <ul class="inline-flex -space-x-px">
+          <?php if ($page > 1): ?>
+            <li>
+              <a href="?page=<?= $page - 1 ?>" class="px-3 py-2 ml-0 leading-tight !text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700">Previous</a>
+            </li>
+          <?php endif; ?>
 
+          <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+            <li>
+              <a href="?page=<?= $i ?>" class="px-3 py-2 leading-tight !text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 <?= $i == $page ? 'bg-orange-400 text-white' : '' ?>"><?= $i ?></a>
+            </li>
+          <?php endfor; ?>
+
+          <?php if ($page < $total_pages): ?>
+            <li>
+              <a href="?page=<?= $page + 1 ?>" class="px-3 py-2 leading-tight !text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700">Next</a>
+            </li>
+          <?php endif; ?>
+        </ul>
+      </nav>
+    </div>
   </div>
 
   <footer class="bg-white w-full sm:pl-8 pl-10 py-5">
-    <span class="sm:ml-64">&copy Created by Abhi Surya Nugroho 2024</span>
+    <span class="sm:ml-64">&copy Created by Abhi Surya Nugroho <?= date('Y') ?></span>
   </footer>
 </body>
 

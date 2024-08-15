@@ -203,11 +203,11 @@ if (isset($_POST["cari"])) {
               <td class="px-6 py-4 text-center">
                 <?= htmlspecialchars($t['tanggal_transaksi']) ?>
               </td>
-              <td class="px-6 py-4 text-center">
-                <?= htmlspecialchars($t['total_harga']) ?>
+              <td class="px-6 py-4 text-center w-40">
+                <?php echo 'Rp ' . number_format($t['total_harga'], 0, ',', '.'); ?>
               </td>
-              <td class="px-6 py-4 text-center">
-                <?= htmlspecialchars($t['tunai']) ?>
+              <td class="px-6 py-4 text-center w-40">
+                <?php echo 'Rp ' . number_format($t['tunai'], 0, ',', '.'); ?>
               </td>
               <td class="px-6 py-4 text-blue-400 text-center">
                 <a href="Transaksi/DetailTransaksi.php?id=<?php echo htmlspecialchars($t['id']) ?>" class="hover:underline">Detail Transaksi</a>

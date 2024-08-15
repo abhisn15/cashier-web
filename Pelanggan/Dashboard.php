@@ -4,12 +4,30 @@ session_start();
 
 $username = $_SESSION['nama'];
 $role = $_SESSION['role'];
+$id_user = $_SESSION['id'];
 
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'User') {
   header('Location: ../login.php');
   exit();
 }
 
+// Query untuk total transaksi per kasir (berdasarkan id dari session)
+$query_transaksi = "SELECT COUNT(t.id) AS total_transaksi, SUM(t.total_harga) AS total_pendapatan 
+                    FROM transaksi t
+                    WHERE t.id_user = '$id_user'";
+$result_transaksi = mysqli_query($conn, $query_transaksi);
+$total_transaksi_data = mysqli_fetch_assoc($result_transaksi);
+
+// Query untuk 3 produk yang sering dibeli oleh pengguna
+$query_produk_sering_dibeli = "SELECT b.nama_barang, SUM(dt.kuantitas) AS total_terjual
+                          FROM detail_transaksi dt
+                          JOIN barang b ON dt.id_barang = b.id
+                          JOIN transaksi t ON dt.id_transaksi = t.id
+                          WHERE t.id_user = '$id_user'
+                          GROUP BY b.id
+                          ORDER BY total_terjual DESC
+                          LIMIT 3";
+$result_produk_sering_dibeli = mysqli_query($conn, $query_produk_sering_dibeli);
 ?>
 
 <!DOCTYPE html>
@@ -101,7 +119,7 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'User
             <br>
             <div class="flex flex-row items-center gap-5">
               <ion-icon name="card-sharp" class="rounded-full p-2 bg-green-600 text-white text-4xl"></ion-icon>
-              <span class="text-xl text-gray-500 font-medium">4 Transaksi</span>
+              <span class="text-xl text-gray-500 font-medium"><?= $total_transaksi_data['total_transaksi'] ?> Transaksi</span>
             </div>
           </div>
 
@@ -128,44 +146,21 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'User
             </div>
           </div>
           <br>
-          <div class="flex flex-row items-center gap-5">
-            <span class="text-yellow-500">1.</span><img src="https://cdn.onemars.net/sites/whiskas_id_xGoUJ_mwh5/image/mockup_wks_pouch_ad_mackerel_new-look_-80g_f_1705068811793_1705678005614_1709124356942.png" alt="produk-terlaris1" width="100">
-            <div class="flex flex-col items-start">
-              <span class="text-xl text-gray-500 font-medium">Whiskas Wadidaw</span>
-              <span class="text-md text-gray-400">Terjual: 20</span>
-              <span class="text-md text-gray-400">Stok Tersisa: 20</span>
+          <?php $index = 1;
+          while ($produk = mysqli_fetch_assoc($result_produk_sering_dibeli)) { ?>
+            <div class="flex flex-row items-center gap-5">
+              <span class="text-yellow-500 text-xl"><?= $index ?>.</span>
+              <div class="flex flex-col items-start">
+                <span class="text-xl text-gray-500 font-medium"><?= $produk['nama_barang'] ?></span>
+                <span class="text-md text-gray-400">Terbeli sebanyak: <?= $produk['total_terjual'] ?> unit</span>
+              </div>
             </div>
-          </div>
-          <br>
-          <div class="flex flex-row items-center gap-5">
-            <span>2.</span><img src="https://cdn.onemars.net/sites/whiskas_id_xGoUJ_mwh5/image/mockup_wks_pouch_ad_mackerel_new-look_-80g_f_1705068811793_1705678005614_1709124356942.png" alt="produk-terlaris1" width="100">
-            <div class="flex flex-col items-start">
-              <span class="text-xl text-gray-500 font-medium">Whiskas Wadidaw</span>
-              <span class="text-md text-gray-400">Terjual: 20</span>
-              <span class="text-md text-gray-400">Stok Tersisa: 20</span>
-            </div>
-          </div>
-          <br>
-          <div class="flex flex-row items-center gap-5">
-            <span>3.</span><img src="https://cdn.onemars.net/sites/whiskas_id_xGoUJ_mwh5/image/mockup_wks_pouch_ad_mackerel_new-look_-80g_f_1705068811793_1705678005614_1709124356942.png" alt="produk-terlaris1" width="100">
-            <div class="flex flex-col items-start">
-              <span class="text-xl text-gray-500 font-medium">Whiskas Wadidaw</span>
-              <span class="text-md text-gray-400">Terjual: 20</span>
-              <span class="text-md text-gray-400">Stok Tersisa: 20</span>
-            </div>
-          </div>
-          <br>
-          <div class="flex flex-row items-center gap-5">
-            <span>4.</span><img src="https://cdn.onemars.net/sites/whiskas_id_xGoUJ_mwh5/image/mockup_wks_pouch_ad_mackerel_new-look_-80g_f_1705068811793_1705678005614_1709124356942.png" alt="produk-terlaris1" width="100">
-            <div class="flex flex-col items-start">
-              <span class="text-xl text-gray-500 font-medium">Whiskas Wadidaw</span>
-              <span class="text-md text-gray-400">Terjual: 20</span>
-              <span class="text-md text-gray-400">Stok Tersisa: 20</span>
-            </div>
-          </div>
+          <?php $index++;
+          } ?>
         </div>
       </div>
     </div>
+  </div>
   </div>
 
   <footer class="bg-white w-full sm:pl-8 py-5">

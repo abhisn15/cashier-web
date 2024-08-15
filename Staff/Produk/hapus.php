@@ -5,6 +5,8 @@ error_reporting(E_ALL);
 require '../../functions.php';
 session_start();
 
+$role = $_SESSION['role'];
+
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'Staff') {
   header('Location: ../../login.php');
   exit();
