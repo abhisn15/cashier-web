@@ -1,5 +1,12 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/autoload.php'; // Sesuaikan dengan lokasi autoload.php jika menggunakan Composer
+
 $conn = mysqli_connect('localhost', 'root', '', 'kasir');
+
+date_default_timezone_set('Asia/Jakarta');
 
 if (!$conn) {
   die("Connection failed: " . mysqli_connect_error());
@@ -633,4 +640,105 @@ function getPelangganTeraktif()
               ORDER BY total_transaksi DESC 
               LIMIT 4";
   return query($query);
+}
+
+function sendVerificationEmail($email, $code)
+{
+  $mail = new PHPMailer(true);
+  try {
+    //Server settings
+    $mail->isSMTP();                                            // Set mailer to use SMTP
+    $mail->Host       = 'smtp.gmail.com';                       // Specify main and backup SMTP servers
+    $mail->SMTPAuth   = true;                                   // Enable SMTP authentication
+    $mail->Username   = 'abhisuryanugroho0@gmail.com';          // SMTP username
+    $mail->Password   = 'abhisn55';                             // SMTP password
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;           // Enable TLS encryption, `ssl` also accepted
+    $mail->Port       = 587;                                    // TCP port to connect to
+
+    //Recipients
+    $mail->setFrom('abhisuryanugroho0@gmail.com', 'BiShop');
+    $mail->addAddress($email);                                  // Add a recipient
+
+    // Content
+    $mail->isHTML(true);                                        // Set email format to HTML
+    $mail->Subject = 'Kode Verifikasi Reset Password';
+    $mail->Body    = "Kode verifikasi Anda adalah: <strong>$code</strong>";
+    $mail->AltBody = "Kode verifikasi Anda adalah: $code";
+
+    $mail->send();
+    return true;  // Email berhasil dikirim
+  } catch (Exception $e) {
+    // Log error or handle it as needed
+    return false; // Gagal mengirim email
+  }
+}
+
+
+
+function getUserByEmail($conn, $email)
+{
+  $sql = "SELECT * FROM users WHERE email = ?";
+  $stmt = $conn->prepare($sql);
+  if (!$stmt) {
+    die("Kesalahan pada pernyataan SQL: " . $conn->error);
+  }
+  $stmt->bind_param("s", $email);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  return $result->fetch_assoc();
+}
+
+function saveVerificationCode($conn, $email, $code)
+{
+  $sql = "INSERT INTO password_reset_codes (email, verification_code) VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE verification_code = VALUES(verification_code), created_at = NOW(), is_used = 0";
+  $stmt = $conn->prepare($sql);
+  if (!$stmt) {
+    die("Kesalahan pada pernyataan SQL: " . $conn->error);
+  }
+  $stmt->bind_param("ss", $email, $code);
+  $stmt->execute();
+}
+
+function getVerificationCode($conn, $email)
+{
+  $sql = "SELECT verification_code FROM password_reset_codes 
+            WHERE email = ? AND is_used = 0 AND created_at >= (NOW() - INTERVAL 15 MINUTE)";
+  $stmt = $conn->prepare($sql);
+  if (!$stmt) {
+    die("Kesalahan pada pernyataan SQL: " . $conn->error);
+  }
+  $stmt->bind_param("s", $email);
+  $stmt->execute();
+
+  // Inisialisasi variabel $code
+  $code = null;
+
+  // Bind hasil query ke variabel $code
+  $stmt->bind_result($code);
+  $stmt->fetch();
+  return $code;
+}
+
+function deleteVerificationCode($conn, $email)
+{
+  $sql = "UPDATE password_reset_codes SET is_used = 1 WHERE email = ?";
+  $stmt = $conn->prepare($sql);
+  if (!$stmt) {
+    die("Kesalahan pada pernyataan SQL: " . $conn->error);
+  }
+  $stmt->bind_param("s", $email);
+  $stmt->execute();
+}
+
+function updatePassword($conn, $email, $password)
+{
+  $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+  $sql = "UPDATE users SET password = ? WHERE email = ?";
+  $stmt = $conn->prepare($sql);
+  if (!$stmt) {
+    die("Kesalahan pada pernyataan SQL: " . $conn->error);
+  }
+  $stmt->bind_param("ss", $hashed_password, $email);
+  $stmt->execute();
 }

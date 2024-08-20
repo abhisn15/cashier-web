@@ -20,14 +20,15 @@ if (
 
 // Query untuk mengambil data transaksi
 $transaksi = query('SELECT transaksi.*, 
-         transaksi.tanggal_transaksi, 
-         transaksi.total_harga, 
-         pelanggan.nama AS nama_pelanggan, 
-         kasir.nama AS nama_kasir
-  FROM transaksi 
-  INNER JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
-  INNER JOIN users AS kasir ON transaksi.id_kasir = kasir.id
+                 transaksi.tanggal_transaksi, 
+                 transaksi.total_harga, 
+                 COALESCE(pelanggan.nama, "Pelanggan belum terdaftar") AS nama_pelanggan, 
+                 COALESCE(kasir.nama, "Pelanggan belum terdaftar") AS nama_kasir
+          FROM transaksi 
+          LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
+          LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id;
 ');
+
 ?>
 
 
@@ -172,7 +173,7 @@ $transaksi = query('SELECT transaksi.*,
                 <?php echo 'Rp ' . number_format($t['tunai'], 0, ',', '.'); ?>
               </td>
               <td class="px-6 py-4 text-blue-400 text-center">
-                <a href="Transaksi/DetailTransaksi.php" class="hover:underline">Detail Transaksi</a>
+                <a href="Transaksi/DetailTransaksi.php?id=<?= htmlspecialchars($t['id']) ?>" class="hover:underline">Detail Transaksi</a>
               </td>
             </tr>
           </tbody>

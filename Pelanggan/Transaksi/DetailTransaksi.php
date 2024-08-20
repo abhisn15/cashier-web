@@ -10,38 +10,35 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'User
   exit();
 }
 
-// Fungsi untuk mencari data pengguna berdasarkan keyword
-function cari($keyword)
-{
-  global $conn;
-  $stmt = $conn->prepare("SELECT transaksi.*, users.nama AS judul_buku
-                FROM transaksi INNER JOIN users ON transaksi.id_kasir = users.id LIKE ?");
-  $search = "%$keyword%";
-  $stmt->bind_param('s', $search);
-  $stmt->execute();
-  $result = $stmt->get_result();
-  return $result->fetch_all(MYSQLI_ASSOC);
+// Mengambil id transaksi dari URL
+$id_transaksi = isset($_GET['id']) ? $_GET['id'] : null;
+
+// Jika id tidak ada, redirect ke halaman transaksi
+if ($id_transaksi === null) {
+  header('Location: ../Transaksi.php');
+  exit();
 }
 
-// Mengecek apakah form pencarian telah disubmit
-if (isset($_POST["cari"])) {
-  $keyword = trim($_POST["keyword"]);
-  if (empty($keyword)) {
-    // Jika keyword kosong, ambil semua data dengan pagination
-    $transaksi = query("SELECT * FROM transaksi");
-    $total = query("SELECT COUNT(*) AS total FROM transaksi")[0]['total'];
-  } else {
-    // Jika keyword tidak kosong, cari data yang sesuai
-    $transaksi = cari($keyword);
-    $total = count($transaksi);
-  }
-} else {
-  // Query untuk mengambil data sesuai halaman
-  $transaksi = query("SELECT * FROM transaksi");
-  // Query untuk menghitung total data
-  $total = query("SELECT COUNT(*) AS total FROM transaksi")[0]['total'];
+// Query untuk mengambil detail transaksi berdasarkan id
+$query = "SELECT transaksi.*, users.nama AS nama_kasir, detail_transaksi.kuantitas, barang.nama_barang, barang.harga 
+          FROM transaksi 
+          INNER JOIN users ON transaksi.id_kasir = users.id
+          INNER JOIN detail_transaksi ON transaksi.id = detail_transaksi.id_transaksi
+          INNER JOIN barang ON detail_transaksi.id_barang = barang.id
+          WHERE transaksi.id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param('i', $id_transaksi);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows === 0) {
+  // Jika tidak ada data transaksi, redirect ke halaman transaksi
+  header('Location: ../Transaksi.php');
+  exit();
 }
 
+$transaksi = $result->fetch_all(MYSQLI_ASSOC);
+$kembalian = $transaksi[0]['tunai'] - $transaksi[0]['total_harga'];
 ?>
 
 <!DOCTYPE html>
@@ -96,14 +93,13 @@ if (isset($_POST["cari"])) {
   </aside>
 
   <div class="sm:pl-8 py-5 sm:ml-64 sm:mr-10">
-    <h1 class="text-2xl">Transaksi</h1>
+    <h1 class="text-2xl">Detail Transaksi</h1>
     <br>
     <div class="text-xl flex flex-row items-center gap-4">
       <a href="../Transaksi.php" class="text-gray-500">Transaksi</a>
       <span class="text-gray-500">/</span>
       <a href="#" class="text-orange-500">Detail Transaksi</a>
     </div>
-    <br>
     <br>
     <br>
     <div class="w-full flex justify-center">
@@ -113,74 +109,61 @@ if (isset($_POST["cari"])) {
           <span class="text-2xl font-medium text-gray-400"><strong>Shop</strong></span>
         </div>
         <div class="w-full flex flex-col items-center justify-center">
-          <span></span>
           <div class="text-gray-400 border-dashed border-t-2 border-b-2 gap-6 w-[100%] py-4 px-6 flex flex-row items-center justify-around">
-            <span>21-08-2024 07:18</span>
-            <span>1/Ghiffari</span>
+            <span><?= $transaksi[0]['tanggal_transaksi'] ?></span>
+            <span><?= $transaksi[0]['id'] ?>/<?= $transaksi[0]['nama_kasir'] ?></span>
           </div>
           <div class="flex flex-col items-start gap-4 py-4 w-full">
-            <div class="text-gray-400 flex flex-row justify-between items-start gap-4 text-[14px]">
-              <span class="flex-grow w-60">Chitato Sapi Panggang 68 Gram Makanan Ringan</span>
-              <span style="width: 30px; text-align: center;" class="break-words">2</span>
-              <span style="width: 30px; text-align: center;">x</span>
-              <span class="text-end" style="width: 80px;" class="break-words">Rp 8.000</span>
-              <span style="width: 30px; text-align: center;">=</span>
-              <span class="text-end" style="width: 80px;" class="break-words">Rp 16.000</span>
-            </div>
-            <div class="flex justify-end w-full">
-              <div class="w-60 border-dashed border-t-2"></div>
-            </div>
+            <?php foreach ($transaksi as $detail) : ?>
+              <div class="text-gray-400 flex flex-row justify-between items-start gap-4 text-[14px]">
+                <span class="flex-grow w-60"><?= $detail['nama_barang'] ?></span>
+                <span style="width: 30px; text-align: center;" class="break-words"><?= $detail['kuantitas'] ?></span>
+                <span style="width: 30px; text-align: center;">x</span>
+                <span class="text-end" style="width: 80px;" class="break-words">Rp <?= number_format($detail['harga'], 0, ',', '.') ?></span>
+                <span style="width: 30px; text-align: center;">=</span>
+                <span class="text-end" style="width: 80px;" class="break-words">Rp <?= number_format($detail['kuantitas'] * $detail['harga'], 0, ',', '.') ?></span>
+              </div>
+              <div class="flex justify-end w-full">
+                <div class="w-60 border-dashed border-t-2"></div>
+              </div>
+            <?php endforeach; ?>
             <div class="w-full flex flex-col justify-end text-gray-400">
               <div class="text-gray-400 flex flex-row justify-end items-start gap-4 text-[14px]">
                 <span class="text-start" style="width: 80px;" class="break-words">Total</span>
                 <span style="width: 30px; text-align: center;">:</span>
-                <span class="text-end" style="width: 80px;" class="break-words">Rp 16.000</span>
+                <span class="text-end" style="width: 80px;" class="break-words">Rp <?= number_format(array_sum(array_column($transaksi, 'total_harga')), 0, ',', '.') ?></span>
               </div>
               <div class="text-gray-400 flex flex-row justify-end items-start gap-4 text-[14px]">
-                <span class="text-start" style="width: 80px;" class="break-words">Tunai</span>
-                <span style="width: 30px; text-align: center;">:</span>
-                <span class="text-end" style="width: 80px;" class="break-words">Rp 20.000</span>
+                  <span class="text-start" style="width: 80px;" class="break-words">Tunai</span>
+                  <span style="width: 30px; text-align: center;">:</span>
+                  <span class="text-end" style="width: 80px;" class="break-words">Rp <?= number_format($transaksi[0]['tunai'], 0, ',', '.') ?></span>
               </div>
               <div class="text-gray-400 flex flex-row justify-end items-start gap-4 text-[14px]">
                 <span class="text-start" style="width: 80px;" class="break-words">Kembalian</span>
                 <span style="width: 30px; text-align: center;">:</span>
-                <span class="text-end" style="width: 80px;" class="break-words">Rp 4.000</span>
+                <span class="text-end" style="width: 80px;" class="break-words">Rp <?= number_format($kembalian, 0, ',', '.') ?></span>
               </div>
-            </div>
-            <div class="w-full border-dashed border-2"></div>
-            <span class="text-center w-full text-gray-400">TERIMAKASIH. SELAMAT BELANJA KEMBALI</span>
-            <div class="w-full flex flex-row items-center justify-center text-gray-400 gap-2">
-              <span>=====</span>
-              <span>LAYANAN KONSUMEN BIKASIR</span>
-              <span>=====</span>
-            </div>
-            <span class="text-center w-full text-gray-400">EMAIL : KONTAK@BISHOP.CO.ID</span>
 
+              <div class="w-full border-dashed border-2"></div>
+
+              <span class="text-center w-full text-gray-400">TERIMAKASIH. SELAMAT BELANJA KEMBALI</span>
+
+              <div class="w-full flex flex-row items-center justify-center text-gray-400 gap-2">
+                <span>=====</span>
+                <span>LAYANAN KONSUMEN BIKASIR</span>
+                <span>=====</span>
+              </div>
+
+              <span class="text-center w-full text-gray-400">EMAIL : KONTAK@BISHOP.CO.ID</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-
   <footer class="bg-white w-full sm:pl-8 py-5">
     <span class="sm:ml-64">&copy Created by Abhi Surya Nugroho 2024</span>
   </footer>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const cartCount = document.getElementById('cart-count');
-      let itemCount = 0;
-
-      // Event listener untuk setiap tombol "add-to-cart"
-      document.querySelectorAll('.add-to-cart').forEach(button => {
-        button.addEventListener('click', () => {
-          itemCount++;
-          cartCount.textContent = itemCount;
-          cartCount.classList.remove('hidden'); // Tampilkan notifikasi jika sebelumnya tersembunyi
-        });
-      });
-    });
-  </script>
 </body>
 
 </html>

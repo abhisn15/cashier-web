@@ -54,7 +54,7 @@ $password_err = $login_data['password_err'];
             <span class="invalid-feedback text-red-500 text-sm"><?php echo $password_err; ?></span>
           </div>
           <div class="text-sm w-full text-end">
-            <a href="#" class="font-semibold text-orange-400 hover:text-orange-500 text-[12px] sm:text-md">Lupa password?</a>
+            <a href="lupa_pass.php" class="font-semibold text-orange-400 hover:text-orange-500 text-[12px] sm:text-md">Lupa password?</a>
           </div>
           <div>
             <button type="submit" class="flex w-full justify-center rounded-md bg-orange-400 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-400">Masuk</button>
