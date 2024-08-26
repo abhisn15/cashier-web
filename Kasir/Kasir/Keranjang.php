@@ -57,44 +57,64 @@
   date_default_timezone_set('Asia/Jakarta');
 
   // Checkout
+  // Checkout
   if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['checkout'])) {
-    // Simpan transaksi ke database
     $tanggal_transaksi = date('Y-m-d H:i:s');
-    $id_user = isset($_POST['id_user']) && !empty($_POST['id_user']) ? intval($_POST['id_user']) : null;
+    $email_user = isset($_POST['email_user']) && !empty($_POST['email_user']) ? $_POST['email_user'] : null;
     $id_kasir = $_SESSION['id'];
     $total_harga = isset($_POST['total_harga']) ? intval(str_replace('.', '', $_POST['total_harga'])) : 0;
     $tunai = isset($_POST['tunai']) ? intval(str_replace('.', '', $_POST['tunai'])) : 0;
 
-    // Jika id_user tidak diisi, biarkan null
-    if ($id_user) {
-      // Verifikasi id_user sebelum insert
-      $user_exists_query = "SELECT COUNT(*) FROM users WHERE id = ?";
-      $stmt = $conn->prepare($user_exists_query);
-      $stmt->bind_param('i', $id_user);
+    // Jika tunai kurang dari total harga, tampilkan pesan error dan hentikan proses checkout
+    if ($tunai < $total_harga) {
+      echo "
+        <script>
+            alert('Checkout gagal! Uang tunai tidak mencukupi. Harap masukkan tunai lebih dari total harga.');
+            document.location.href = 'Keranjang.php';
+        </script>
+        ";
+      exit(); // Hentikan eksekusi skrip lebih lanjut
+    }
+
+    // Cek apakah email pelanggan terdaftar
+    $id_user = null;
+    if ($email_user) {
+      $user_query = "SELECT id FROM users WHERE email = ?";
+      $stmt = $conn->prepare($user_query);
+      $stmt->bind_param('s', $email_user);
       $stmt->execute();
-      $stmt->bind_result($user_count);
+      $stmt->bind_result($id_user);
       $stmt->fetch();
       $stmt->close();
 
-      if ($user_count == 0) {
-        echo "User tidak ditemukan.";
-        exit();
+      if (!$id_user) {
+        echo "
+            <script>
+                alert('Email pelanggan tidak ditemukan. Silakan masukkan email yang valid.');
+                document.location.href = 'Keranjang.php';
+            </script>
+            ";
+        exit(); // Hentikan eksekusi skrip lebih lanjut
       }
     }
 
-    // Insert transaksi
+    // Insert transaksi (jika id_user null, berarti pelanggan tidak terdaftar)
     $stmt = $conn->prepare("INSERT INTO transaksi (tanggal_transaksi, id_user, id_kasir, total_harga, tunai) VALUES (?, ?, ?, ?, ?)");
     $stmt->bind_param('siiii', $tanggal_transaksi, $id_user, $id_kasir, $total_harga, $tunai);
     $stmt->execute();
     $id_transaksi = $stmt->insert_id;
 
-    // Insert detail transaksi
+    // Insert detail transaksi dan update stok barang
     foreach ($produk as $row) {
       $kuantitas = $_SESSION['keranjang'][$row['id']];
       $total_harga_barang = $kuantitas * $row['harga'];
 
       $stmt = $conn->prepare("INSERT INTO detail_transaksi (id_transaksi, id_barang, kuantitas, harga_satuan, total_harga, tunai) VALUES (?, ?, ?, ?, ?, ?)");
       $stmt->bind_param('iiiiii', $id_transaksi, $row['id'], $kuantitas, $row['harga'], $total_harga_barang, $tunai);
+      $stmt->execute();
+
+      $stmt = $conn->prepare("UPDATE barang SET stok = stok - ? WHERE id = ?");
+      $stmt->bind_param('ii', $kuantitas, $row['id']);
       $stmt->execute();
     }
 
@@ -110,6 +130,7 @@
     ";
   }
 
+
   ?>
 
   <!DOCTYPE html>
@@ -118,7 +139,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SuperAdmin | Dashboard</title>
+    <title>Kasir | Keranjang</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
     <link rel="stylesheet" href="../assets/css/style.css" />
@@ -201,6 +222,7 @@
             <?php else: ?>
               <?php $i = 1; ?>
               <?php foreach ($produk as $row) : ?>
+                <?php $totalharga = $row['harga'] * $_SESSION['keranjang'][$row['id']] ?>
                 <tr class="bg-white border-b hover:bg-gray-50">
                   <td class="px-6 py-4 text-black flex flex-row items-center gap-2 w-80">
                     <img src="../../assets/img/<?= htmlspecialchars($row['gambar']) ?>" alt="<?= htmlspecialchars($row['nama_barang']) ?>" width="100">
@@ -227,7 +249,7 @@
                   <td class="py-4 px-6 text-center"><?php echo htmlspecialchars($_SESSION['keranjang'][$row['id']]); ?></td>
 
                   <td class="px-6 py-4 text-center total-harga">
-                    <?php echo 'Rp ' . number_format($row['harga'], 0, ',', '.'); ?>
+                    <?php echo number_format($totalharga, 0, ',', '.'); ?>
                   </td>
                   <td class="px-6 py-4 text-center">
                     <a onclick="return confirm('Apakah kamu yakin ingin menghapus barang ini di keranjang?');" href="?hapus=<?php echo $row['id']; ?>" class="font-medium text-red-600 hover:underline">Hapus</a>
@@ -243,14 +265,7 @@
       <form method="post" class="bg-white shadow-md border-2 rounded-xl py-5 px-10 flex flex-wrap items-center justify-between gap-5">
         <div class="w-80">
           <label for="id_user">Jika pelanggan belum terdaftar abaikan!</label>
-          <select name="id_user" id="id_user" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50">
-            <option value="">Pilih Pelanggan</option>
-            <?php foreach ($pelanggan as $option_pelanggan) : ?>
-              <option value="<?php echo $option_pelanggan['id']; ?>">
-                <?php echo htmlspecialchars($option_pelanggan['nama']); ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
+          <input type="email" name="email_user" id="email_user" class="h-10 border mt-1 rounded px-4 w-full bg-gray-50" placeholder="Masukkan email pelanggan" />
         </div>
         <span>Total Produk(<?php echo htmlspecialchars($cartCount) ?>)</span>
         <div class="md:col-span-5">
@@ -266,7 +281,7 @@
           function updateKembalian() {
             const tunai = parseInt(tunaiInput.value.replace(/[^0-9]/g, '')) || 0; // Menghapus format Rupiah
             const kembalian = tunai - totalHarga;
-            kembalianElement.textContent = `Kembalian: ${formatRupiah(kembalian)}`;
+            kembalianElement.textContent = `Kembalian: Rp ${formatRupiah(kembalian)}`;
           }
         </script>
         <button name="checkout" class="bg-orange-400 hover:bg-orange-600 py-3 px-10 text-center rounded-md text-white">
