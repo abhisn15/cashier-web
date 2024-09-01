@@ -45,7 +45,7 @@ if (isset($_POST["cari"])) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Staff | Produk</title>
+  <title>Superadmin | Produk</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
   <link rel="stylesheet" href="../assets/css/style.css" />
@@ -164,7 +164,7 @@ if (isset($_POST["cari"])) {
           </tr>
         </thead>
         <tbody>
-          <?php $i = 1; ?>
+          <?php $i = $page == 1 ? 1 : 6 + ($page - 2) * $limit; ?>
           <?php foreach ($produk as $row) : ?>
             <tr class="bg-white border-b bg-gray-800 border-gray-700 hover:bg-gray-50">
               <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
@@ -191,7 +191,7 @@ if (isset($_POST["cari"])) {
               <td class="px-6 py-4 text-center">
                 <a href="Produk/edit.php?id=<?= $row['id'] ?>" class="font-medium text-blue-600 hover:underline">Edit</a>
                 <span>|</span>
-                <a onclick="return confirm('Apakah kamu yakin ingin menghapus produk ini?');" href="Produk/hapus.php?id=<?= $row['id'] ?>" class="font-medium text-red-600 hover:underline">Hapus</a>
+                <a onclick="return confirm('Apakah kamu yakin ingin menghapus produk ini?');" href="Produk/hapus.php?id=<?= ($row['id']) ?>" class="font-medium text-red-600 hover:underline">Hapus</a>
               </td>
             </tr>
           <?php endforeach; ?>
@@ -209,9 +209,10 @@ if (isset($_POST["cari"])) {
 
           <?php for ($i = 1; $i <= $total_pages; $i++): ?>
             <li>
-              <a href="?page=<?= $i ?>" class="px-3 py-2 leading-tight !text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 <?= $i == $page ? 'bg-orange-400 text-white' : '' ?>"><?= $i ?></a>
+              <a href="?page=<?= $i ?>" class="px-3 py-2 leading-tight <?= $i == $page ? 'bg-orange-400 text-white' : '!text-gray-500 bg-white' ?> border border-gray-300 hover:bg-gray-100 hover:text-gray-700"><?= $i ?></a>
             </li>
           <?php endfor; ?>
+
 
           <?php if ($page < $total_pages): ?>
             <li>

@@ -7,28 +7,84 @@ require '../functions.php';
 session_start();
 
 $username = $_SESSION['nama'];
-
 $role = $_SESSION['role'];
 
+$limit = 6;
+$total_data = count(query("SELECT * FROM transaksi"));
+// Hitung total halaman
+$total_pages = ceil($total_data / $limit);
+
+// Ambil halaman saat ini, default halaman 1
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+
+// Hitung offset
+$offset = ($page - 1) * $limit;
+
 // Cek apakah user sudah login dan memiliki role SuperAdmin
-if (
-  !isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'SuperAdmin'
-) {
+if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $role !== 'SuperAdmin') {
   header('Location: ../../login.php');
   exit();
 }
 
-// Query untuk mengambil data transaksi
-$transaksi = query('SELECT transaksi.*, 
-                 transaksi.tanggal_transaksi, 
-                 transaksi.total_harga, 
-                 COALESCE(pelanggan.nama, "Pelanggan belum terdaftar") AS nama_pelanggan, 
-                 COALESCE(kasir.nama, "Pelanggan belum terdaftar") AS nama_kasir
-          FROM transaksi 
-          LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
-          LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id;
-');
+// Fungsi untuk mencari data transaksi berdasarkan keyword
+function cari($keyword)
+{
+  global $conn;
+  $keyword = "%$keyword%";
+  $stmt = $conn->prepare("
+        SELECT transaksi.*, 
+               COALESCE(pelanggan.nama, 'Pelanggan belum terdaftar') AS nama_pelanggan,
+               kasir.nama AS nama_kasir
+        FROM transaksi 
+        LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
+        LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
+        WHERE transaksi.id LIKE ? 
+           OR pelanggan.nama LIKE ? 
+           OR kasir.nama LIKE ?
+    ");
+  $stmt->bind_param('sss', $keyword, $keyword, $keyword);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  return $result->fetch_all(MYSQLI_ASSOC);
+}
 
+// Mengecek apakah form pencarian telah disubmit
+if (isset($_POST["cari"])) {
+  $keyword = trim($_POST["keyword"]);
+  if (empty($keyword)) {
+    // Jika keyword kosong, ambil semua data tanpa filter pencarian
+    $transaksi = query("
+            SELECT transaksi.*, 
+                   transaksi.tanggal_transaksi, 
+                   transaksi.total_harga, 
+                   COALESCE(pelanggan.nama, 'Pelanggan belum terdaftar') AS nama_pelanggan, 
+                   kasir.nama AS nama_kasir
+            FROM transaksi 
+            LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
+            LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
+            LIMIT $limit OFFSET $offset
+        ");
+    $total = query("SELECT COUNT(*) AS total FROM transaksi")[0]['total'];
+  } else {
+    // Jika keyword tidak kosong, cari data yang sesuai
+    $transaksi = cari($keyword);
+    $total = count($transaksi);
+  }
+} else {
+  // Query untuk mengambil data tanpa pencarian
+  $transaksi = query("
+        SELECT transaksi.*, 
+               transaksi.tanggal_transaksi, 
+               transaksi.total_harga, 
+               COALESCE(pelanggan.nama, 'Pelanggan belum terdaftar') AS nama_pelanggan, 
+               kasir.nama AS nama_kasir
+        FROM transaksi 
+        LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
+        LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
+        LIMIT $limit OFFSET $offset
+    ");
+  $total = query("SELECT COUNT(*) AS total FROM transaksi")[0]['total'];
+}
 ?>
 
 
@@ -147,7 +203,7 @@ $transaksi = query('SELECT transaksi.*,
             </th>
           </tr>
         </thead>
-        <?php $i = 1; ?>
+        <?php $i = $page == 1 ? 1 : 7 + ($page - 2) * $limit; ?>
         <?php foreach ($transaksi as $t) : ?>
           <tbody>
             <tr class="bg-white border-b hover:bg-gray-50">
@@ -179,6 +235,30 @@ $transaksi = query('SELECT transaksi.*,
           </tbody>
         <?php endforeach; ?>
       </table>
+    </div>
+    <div class="flex justify-center mt-5">
+      <nav>
+        <ul class="inline-flex -space-x-px">
+          <?php if ($page > 1): ?>
+            <li>
+              <a href="?page=<?= $page - 1 ?>" class="px-3 py-2 ml-0 leading-tight !text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700">Previous</a>
+            </li>
+          <?php endif; ?>
+
+          <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+            <li>
+              <a href="?page=<?= $i ?>" class="px-3 py-2 leading-tight <?= $i == $page ? 'bg-orange-400 text-white' : '!text-gray-500 bg-white' ?> border border-gray-300 hover:bg-gray-100 hover:text-gray-700"><?= $i ?></a>
+            </li>
+          <?php endfor; ?>
+
+
+          <?php if ($page < $total_pages): ?>
+            <li>
+              <a href="?page=<?= $page + 1 ?>" class="px-3 py-2 leading-tight !text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700">Next</a>
+            </li>
+          <?php endif; ?>
+        </ul>
+      </nav>
     </div>
   </div>
 

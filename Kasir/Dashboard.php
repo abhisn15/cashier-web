@@ -27,7 +27,7 @@ $query_produk_terlaris = "SELECT b.nama_barang, SUM(dt.kuantitas) AS total_terju
                           LIMIT 3";
 $result_produk_terlaris = mysqli_query($conn, $query_produk_terlaris);
 
-checkSessionValidity($conn);
+
 ?>
 
 <!DOCTYPE html>
@@ -42,6 +42,7 @@ checkSessionValidity($conn);
   <link rel="stylesheet" href="../assets/css/style.css" />
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+  <link id="favicon" rel="icon" href="../assets/img/favicon.png" type="image/svg">
 </head>
 
 <body class="mx-10">

@@ -3,6 +3,7 @@ require '../functions.php';
 session_start();
 
 $username = $_SESSION['nama'];
+$email = $_SESSION["email"];
 $role = $_SESSION['role'];
 $id_user = $_SESSION['id'];
 
@@ -83,7 +84,12 @@ $result_produk_sering_dibeli = mysqli_query($conn, $query_produk_sering_dibeli);
 
   <div class="sm:pl-8 py-5 sm:ml-64 sm:mr-10">
 
-    <h3 class="text-md text-gray-500">Selamat Datang, <strong><?= $username ?></strong></h3>
+    <div class='flex w-full justify-between'>
+      <h3 class="text-md text-gray-500">Selamat Datang, <strong><?= $username ?></strong></h3>
+      <h3 class="text-md text-gray-500">
+        <?= $email ?>
+      </h3>
+    </div>
     <br>
     <h1 class="text-2xl">Dashboard</h1>
     <br>

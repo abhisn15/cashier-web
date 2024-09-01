@@ -18,21 +18,32 @@ date_default_timezone_set('Asia/Jakarta');
 // Ambil ID kasir dari session
 $id_kasir = $_SESSION['id'];
 
+$limit = 6;
+$total_data = count(query("SELECT * FROM transaksi WHERE id_kasir = $id_kasir"));
+// Hitung total halaman
+$total_pages = ceil($total_data / $limit);
+
+// Ambil halaman saat ini, default halaman 1
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+
+// Hitung offset
+$offset = ($page - 1) * $limit;
+
 // Fungsi untuk mencari data transaksi berdasarkan keyword
 function cari($keyword, $id_kasir)
 {
   global $conn;
   $stmt = $conn->prepare("SELECT transaksi.*, 
-                                 pelanggan.nama AS nama_pelanggan, 
-                                 kasir.nama AS nama_kasir
-                          FROM transaksi 
-                          LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
-                          LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
-                          WHERE (transaksi.id LIKE ? 
-                                 OR transaksi.id_kasir LIKE ?)
-                            AND transaksi.id_kasir = ?");
+                                   pelanggan.nama AS nama_pelanggan, 
+                                   kasir.nama AS nama_kasir
+                            FROM transaksi 
+                            LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
+                            LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
+                            WHERE transaksi.id_kasir = ?
+                              AND (transaksi.id LIKE ? 
+                                   OR pelanggan.nama LIKE ?)");
   $search = "%$keyword%";
-  $stmt->bind_param('ssi', $search, $search, $id_kasir);
+  $stmt->bind_param('iss', $id_kasir, $search, $search);
   $stmt->execute();
   $result = $stmt->get_result();
   return $result->fetch_all(MYSQLI_ASSOC);
@@ -44,14 +55,15 @@ if (isset($_POST["cari"])) {
   if (empty($keyword)) {
     // Jika keyword kosong, ambil semua data dengan filter ID kasir
     $transaksi = query("SELECT transaksi.*, 
-                                transaksi.tanggal_transaksi, 
-                                transaksi.total_harga, 
-                                pelanggan.nama AS nama_pelanggan, 
-                                kasir.nama AS nama_kasir
-                         FROM transaksi 
-                         LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
-                         LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
-                         WHERE transaksi.id_kasir = $id_kasir");
+                                    transaksi.tanggal_transaksi, 
+                                    transaksi.total_harga, 
+                                    pelanggan.nama AS nama_pelanggan, 
+                                    kasir.nama AS nama_kasir
+                             FROM transaksi 
+                             LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
+                             LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
+                             WHERE transaksi.id_kasir = $id_kasir
+                             LIMIT $limit OFFSET $offset");
 
     $total = query("SELECT COUNT(*) AS total FROM transaksi WHERE id_kasir = $id_kasir")[0]['total'];
   } else {
@@ -62,14 +74,15 @@ if (isset($_POST["cari"])) {
 } else {
   // Query untuk mengambil data sesuai ID kasir
   $transaksi = query("SELECT transaksi.*, 
-                              transaksi.tanggal_transaksi, 
-                              transaksi.total_harga, 
-                              pelanggan.nama AS nama_pelanggan, 
-                              kasir.nama AS nama_kasir
-                       FROM transaksi 
-                       LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
-                       LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
-                       WHERE transaksi.id_kasir = $id_kasir");
+                                transaksi.tanggal_transaksi, 
+                                transaksi.total_harga, 
+                                pelanggan.nama AS nama_pelanggan, 
+                                kasir.nama AS nama_kasir
+                         FROM transaksi 
+                         LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
+                         LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
+                         WHERE transaksi.id_kasir = $id_kasir
+                         LIMIT $limit OFFSET $offset");
 
   // Query untuk menghitung total data
   $total = query("SELECT COUNT(*) AS total FROM transaksi WHERE id_kasir = $id_kasir")[0]['total'];
@@ -112,7 +125,7 @@ if (isset($_POST["cari"])) {
           </a>
         </li>
         <li>
-          <a href="Toko.php" class="flex items-center p-2 rounded-lg text-gray-900 hover:text-white hover:bg-orange-400 group">
+          <a href="Kasir.php" class="flex items-center p-2 rounded-lg text-gray-900 hover:text-white hover:bg-orange-400 group">
             <svg width="26px" height="26px" class="fill-gray-900 group-hover:fill-white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M22,5H2A1,1,0,0,0,1,6v4a3,3,0,0,0,2,2.82V22a1,1,0,0,0,1,1H20a1,1,0,0,0,1-1V12.82A3,3,0,0,0,23,10V6A1,1,0,0,0,22,5ZM15,7h2v3a1,1,0,0,1-2,0ZM11,7h2v3a1,1,0,0,1-2,0ZM7,7H9v3a1,1,0,0,1-2,0ZM4,11a1,1,0,0,1-1-1V7H5v3A1,1,0,0,1,4,11ZM14,21H10V19a2,2,0,0,1,4,0Zm5,0H16V19a4,4,0,0,0-8,0v2H5V12.82a3.17,3.17,0,0,0,1-.6,3,3,0,0,0,4,0,3,3,0,0,0,4,0,3,3,0,0,0,4,0,3.17,3.17,0,0,0,1,.6Zm2-11a1,1,0,0,1-2,0V7h2ZM4.3,3H20a1,1,0,0,0,0-2H4.3a1,1,0,0,0,0,2Z" />
             </svg>
@@ -184,7 +197,7 @@ if (isset($_POST["cari"])) {
             </th>
           </tr>
         </thead>
-        <?php $i = 1; ?>
+        <?php $i = $page == 1 ? 1 : 7 + ($page - 2) * $limit; ?>
         <?php foreach ($transaksi as $t) : ?>
           <tbody>
             <tr class="bg-white border-b hover:bg-gray-50">
@@ -216,6 +229,30 @@ if (isset($_POST["cari"])) {
           </tbody>
         <?php endforeach; ?>
       </table>
+    </div>
+    <div class="flex justify-center mt-5">
+      <nav>
+        <ul class="inline-flex -space-x-px">
+          <?php if ($page > 1): ?>
+            <li>
+              <a href="?page=<?= $page - 1 ?>" class="px-3 py-2 ml-0 leading-tight !text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700">Previous</a>
+            </li>
+          <?php endif; ?>
+
+          <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+            <li>
+              <a href="?page=<?= $i ?>" class="px-3 py-2 leading-tight <?= $i == $page ? 'bg-orange-400 text-white' : '!text-gray-500 bg-white' ?> border border-gray-300 hover:bg-gray-100 hover:text-gray-700"><?= $i ?></a>
+            </li>
+          <?php endfor; ?>
+
+
+          <?php if ($page < $total_pages): ?>
+            <li>
+              <a href="?page=<?= $page + 1 ?>" class="px-3 py-2 leading-tight !text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700">Next</a>
+            </li>
+          <?php endif; ?>
+        </ul>
+      </nav>
     </div>
   </div>
 

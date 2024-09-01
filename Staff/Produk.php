@@ -149,7 +149,7 @@ if (isset($_POST["cari"])) {
           </tr>
         </thead>
         <tbody>
-          <?php $i = 1; ?>
+          <?php $i = $page == 1 ? 1 : 6 + ($page - 2) * $limit; ?>
           <?php foreach ($produk as $row) : ?>
             <tr class="bg-white border-b bg-gray-800 border-gray-700 hover:bg-gray-50">
               <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
@@ -194,9 +194,10 @@ if (isset($_POST["cari"])) {
 
           <?php for ($i = 1; $i <= $total_pages; $i++): ?>
             <li>
-              <a href="?page=<?= $i ?>" class="px-3 py-2 leading-tight !text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 <?= $i == $page ? 'bg-orange-400 text-white' : '' ?>"><?= $i ?></a>
+              <a href="?page=<?= $i ?>" class="px-3 py-2 leading-tight <?= $i == $page ? 'bg-orange-400 text-white' : '!text-gray-500 bg-white' ?> border border-gray-300 hover:bg-gray-100 hover:text-gray-700"><?= $i ?></a>
             </li>
           <?php endfor; ?>
+
 
           <?php if ($page < $total_pages): ?>
             <li>

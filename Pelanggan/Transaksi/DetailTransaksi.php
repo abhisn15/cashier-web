@@ -53,6 +53,44 @@ $kembalian = $transaksi[0]['tunai'] - $transaksi[0]['total_harga'];
   <link rel="stylesheet" href="../assets/css/style.css" />
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+  <style>
+    .struk {
+      font-family: 'Courier New', Courier, monospace;
+      width: 58mm;
+      /* Sesuaikan dengan lebar kertas printer */
+    }
+
+    .receipt {
+      width: 100%;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    .line {
+      border-top: 1px dashed #000;
+      margin: 5px 0;
+    }
+
+    .bold {
+      font-weight: bold;
+    }
+
+    .small {
+      font-size: 12px;
+    }
+
+    .total,
+    .tunai,
+    .kembalian {
+      margin-top: 10px;
+    }
+  </style>
 </head>
 
 <body class="mx-10">
@@ -71,7 +109,7 @@ $kembalian = $transaksi[0]['tunai'] - $transaksi[0]['total_harga'];
     <div class="h-full px-3 pb-4 overflow-y-auto bg-white rounded-2xl bg-gray-800 border-r-2">
       <ul class="space-y-2 font-medium">
         <li>
-          <a href="../Dashboard.php" class="flex items-center p-2 rounded-lg text-gray-900 hover:text-white hover:bg-orange-400 group">
+          <a href="Dashboard.php" class="flex items-center p-2 rounded-lg text-gray-900 hover:text-white hover:bg-orange-400 group">
             <ion-icon name="home-sharp" class="text-gray-900 group-hover:text-white text-2xl"></ion-icon>
             <span class="ms-3">Dashboard</span>
           </a>
@@ -83,7 +121,7 @@ $kembalian = $transaksi[0]['tunai'] - $transaksi[0]['total_harga'];
           </a>
         </li>
         <li>
-          <a href="../../logout.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:text-white hover:bg-red-600 group">
+          <a href="../logout.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:text-white hover:bg-red-600 group">
             <ion-icon name="log-out-sharp" class="text-2xl"></ion-icon>
             <span class="flex-1 ms-3 whitespace-nowrap">Logout</span>
           </a>
@@ -91,6 +129,7 @@ $kembalian = $transaksi[0]['tunai'] - $transaksi[0]['total_harga'];
       </ul>
     </div>
   </aside>
+
 
   <div class="sm:pl-8 py-5 sm:ml-64 sm:mr-10">
     <h1 class="text-2xl">Detail Transaksi</h1>
@@ -102,64 +141,64 @@ $kembalian = $transaksi[0]['tunai'] - $transaksi[0]['total_harga'];
     </div>
     <br>
     <br>
-    <div class="w-full flex justify-center">
-      <div class="flex flex-col items-start bg-white py-8 px-5 shadow-md">
-        <div class="w-full flex flex-row py-5 items-end justify-center pl-5">
-          <span class="text-3xl font-bold text-gray-400">Bi</span>
-          <span class="text-2xl font-medium text-gray-400"><strong>Shop</strong></span>
+    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+      <button onclick="location.href = 'Cetak.php?id=<?php echo htmlspecialchars($transaksi[0]['id']) ?>'" class="relative overflow-hidden text-white py-3 px-6 font-semibold rounded-3xl shadow-xl transform transition-all duration-500">
+        <span class="absolute top-0 left-0 w-full h-full bg-orange-400"></span>
+        <div class="flex flex-row items-center gap-2">
+          <ion-icon name="receipt-sharp" class="text-sm sm:text-2xl text-white font-extrabold"></ion-icon>
+          <span class="relative z-10 text-[12px] sm:text-sm">Cetak Detail Transaksi</span>
         </div>
-        <div class="w-full flex flex-col items-center justify-center">
-          <div class="text-gray-400 border-dashed border-t-2 border-b-2 gap-6 w-[100%] py-4 px-6 flex flex-row items-center justify-around">
-            <span><?= $transaksi[0]['tanggal_transaksi'] ?></span>
-            <span><?= $transaksi[0]['id'] ?>/<?= $transaksi[0]['nama_kasir'] ?></span>
+      </button>
+    </div>
+    <br>
+    <br>
+    <div class="w-[320px] flex justify-center text-gray-500">
+      <div class="receipt">
+        <div class="center bold">
+          BiShop<br>
+          <span class="small">Jalan Sigma No. 666</span><br>
+          <span class="small">Telp: 085314818119</span>
+        </div>
+        <div class="line"></div>
+        <div class="small">
+          Tanggal: <?= $transaksi[0]['tanggal_transaksi'] ?><br>
+          ID Transaksi: <?= $transaksi[0]['id'] ?><br>
+          Kasir: <?= $transaksi[0]['nama_kasir'] ?>
+        </div>
+        <div class="line text-gray-300"></div>
+        <?php foreach ($transaksi as $detail) : ?>
+          <div class="small">
+            <?= $detail['nama_barang'] ?><br>
+            <?= $detail['kuantitas'] ?> x Rp <?= number_format($detail['harga'], 0, ',', '.') ?> =
+            <span class="right">Rp <?= number_format($detail['kuantitas'] * $detail['harga'], 0, ',', '.') ?></span>
           </div>
-          <div class="flex flex-col items-start gap-4 py-4 w-full">
-            <?php foreach ($transaksi as $detail) : ?>
-              <div class="text-gray-400 flex flex-row justify-between items-start gap-4 text-[14px]">
-                <span class="flex-grow w-60"><?= $detail['nama_barang'] ?></span>
-                <span style="width: 30px; text-align: center;" class="break-words"><?= $detail['kuantitas'] ?></span>
-                <span style="width: 30px; text-align: center;">x</span>
-                <span class="text-end" style="width: 80px;" class="break-words">Rp <?= number_format($detail['harga'], 0, ',', '.') ?></span>
-                <span style="width: 30px; text-align: center;">=</span>
-                <span class="text-end" style="width: 80px;" class="break-words">Rp <?= number_format($detail['kuantitas'] * $detail['harga'], 0, ',', '.') ?></span>
-              </div>
-              <div class="flex justify-end w-full">
-                <div class="w-60 border-dashed border-t-2"></div>
-              </div>
-            <?php endforeach; ?>
-            <div class="w-full flex flex-col justify-end text-gray-400">
-              <div class="text-gray-400 flex flex-row justify-end items-start gap-4 text-[14px]">
-                <span class="text-start" style="width: 80px;" class="break-words">Total</span>
-                <span style="width: 30px; text-align: center;">:</span>
-                <span class="text-end" style="width: 80px;" class="break-words">Rp <?= number_format(array_sum(array_column($transaksi, 'total_harga')), 0, ',', '.') ?></span>
-              </div>
-              <div class="text-gray-400 flex flex-row justify-end items-start gap-4 text-[14px]">
-                  <span class="text-start" style="width: 80px;" class="break-words">Tunai</span>
-                  <span style="width: 30px; text-align: center;">:</span>
-                  <span class="text-end" style="width: 80px;" class="break-words">Rp <?= number_format($transaksi[0]['tunai'], 0, ',', '.') ?></span>
-              </div>
-              <div class="text-gray-400 flex flex-row justify-end items-start gap-4 text-[14px]">
-                <span class="text-start" style="width: 80px;" class="break-words">Kembalian</span>
-                <span style="width: 30px; text-align: center;">:</span>
-                <span class="text-end" style="width: 80px;" class="break-words">Rp <?= number_format($kembalian, 0, ',', '.') ?></span>
-              </div>
-
-              <div class="w-full border-dashed border-2"></div>
-
-              <span class="text-center w-full text-gray-400">TERIMAKASIH. SELAMAT BELANJA KEMBALI</span>
-
-              <div class="w-full flex flex-row items-center justify-center text-gray-400 gap-2">
-                <span>=====</span>
-                <span>LAYANAN KONSUMEN BIKASIR</span>
-                <span>=====</span>
-              </div>
-
-              <span class="text-center w-full text-gray-400">EMAIL : KONTAK@BISHOP.CO.ID</span>
-            </div>
-          </div>
+        <?php endforeach; ?>
+        <div class="line"></div>
+        <div class="small total">
+          <span class="bold">Total</span>
+          <span class="right">Rp <?= number_format($transaksi[0]['total_harga'], 0, ',', '.') ?></span>
+        </div>
+        <div class="small tunai">
+          <span class="bold">Tunai</span>
+          <span class="right">Rp <?= number_format($transaksi[0]['tunai'], 0, ',', '.') ?></span>
+        </div>
+        <div class="small kembalian">
+          <span class="bold">Kembalian</span>
+          <span class="right">Rp <?= number_format($kembalian, 0, ',', '.') ?></span>
+        </div>
+        <div class="line"></div>
+        <div class="center small">
+          Terima Kasih<br>
+          Selamat Belanja Kembali
+        </div>
+        <div class="line"></div>
+        <div class="center small">
+          Layanan Konsumen:<br>
+          kontak@bishop.my.id
         </div>
       </div>
     </div>
+  </div>
   </div>
   <footer class="bg-white w-full sm:pl-8 py-5">
     <span class="sm:ml-64">&copy Created by Abhi Surya Nugroho 2024</span>

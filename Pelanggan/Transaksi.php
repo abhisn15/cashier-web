@@ -16,6 +16,17 @@ date_default_timezone_set('Asia/Jakarta');
 // Ambil ID kasir dari session
 $id_user = $_SESSION['id'];
 
+$limit = 6;
+$total_data = count(query("SELECT * FROM transaksi WHERE id_user = $id_user"));
+// Hitung total halaman
+$total_pages = ceil($total_data / $limit);
+
+// Ambil halaman saat ini, default halaman 1
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+
+// Hitung offset
+$offset = ($page - 1) * $limit;
+
 // Fungsi untuk mencari data transaksi berdasarkan keyword
 function cari($keyword, $id_user)
 {
@@ -49,7 +60,8 @@ if (isset($_POST["cari"])) {
                          FROM transaksi 
                          LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
                          LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
-                         WHERE transaksi.id_user = $id_user");
+                         WHERE transaksi.id_user = $id_user
+                         LIMIT $limit OFFSET $offset");
 
     $total = query("SELECT COUNT(*) AS total FROM transaksi WHERE id_kasir = $id_user")[0]['total'];
   } else {
@@ -67,7 +79,8 @@ if (isset($_POST["cari"])) {
                        FROM transaksi 
                        LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
                        LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
-                       WHERE transaksi.id_user = $id_user");
+                       WHERE transaksi.id_user = $id_user
+                       LIMIT $limit OFFSET $offset");
 
   // Query untuk menghitung total data
   $total = query("SELECT COUNT(*) AS total FROM transaksi WHERE id_kasir = $id_user")[0]['total'];
@@ -174,7 +187,7 @@ if (isset($_POST["cari"])) {
             </th>
           </tr>
         </thead>
-        <?php $i = 1; ?>
+        <?php $i = $page == 1 ? 1 : 7 + ($page - 2) * $limit; ?>
         <tbody>
           <?php foreach ($transaksi as $t) : ?>
             <tr class="bg-white border-b hover:bg-gray-50">
@@ -206,6 +219,30 @@ if (isset($_POST["cari"])) {
           <?php endforeach; ?>
         </tbody>
       </table>
+    </div>
+    <div class="flex justify-center mt-5">
+      <nav>
+        <ul class="inline-flex -space-x-px">
+          <?php if ($page > 1): ?>
+            <li>
+              <a href="?page=<?= $page - 1 ?>" class="px-3 py-2 ml-0 leading-tight !text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700">Previous</a>
+            </li>
+          <?php endif; ?>
+
+          <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+            <li>
+              <a href="?page=<?= $i ?>" class="px-3 py-2 leading-tight <?= $i == $page ? 'bg-orange-400 text-white' : '!text-gray-500 bg-white' ?> border border-gray-300 hover:bg-gray-100 hover:text-gray-700"><?= $i ?></a>
+            </li>
+          <?php endfor; ?>
+
+
+          <?php if ($page < $total_pages): ?>
+            <li>
+              <a href="?page=<?= $page + 1 ?>" class="px-3 py-2 leading-tight !text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700">Next</a>
+            </li>
+          <?php endif; ?>
+        </ul>
+      </nav>
     </div>
   </div>
 

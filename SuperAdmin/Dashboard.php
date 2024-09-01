@@ -17,6 +17,12 @@ if (
   exit();
 }
 
+// Menghitung total stok produk
+$totalStokQuery = "SELECT SUM(stok) AS total_stok FROM barang";
+$totalStokResult = mysqli_query($conn, $totalStokQuery);
+$totalStok = mysqli_fetch_assoc($totalStokResult)['total_stok'];
+
+
 $totalPelanggan = getTotalPelanggan();
 $totalKasir = getTotalKasir();
 $totalStaff = getTotalStaff();
@@ -165,7 +171,7 @@ $pelangganTeraktif = getPelangganTeraktif();
           </div>
           <div class="py-4 px-6 bg-white rounded-xl shadow-xl w-full xl:w-[100%] border-orange-400 hover:scale-105 duration-200 hover:border-b-4 hover:border-r-4 border-0">
             <div class="flex flex-row justify-between items-center">
-              <span class="text-md text-red-400">Total Staff</span>
+              <span class="text-md text-red-400">Total Staff Barang</span>
               <div class="flex items-center">
                 <div class="flex items-center ms-3">
                   <div>
@@ -187,7 +193,34 @@ $pelangganTeraktif = getPelangganTeraktif();
             <br>
             <div class="flex flex-row items-center gap-5">
               <ion-icon name="people-sharp" class="rounded-full p-2 bg-red-400 text-white text-4xl"></ion-icon>
-              <span class="text-xl text-gray-500 font-medium"><?= $totalStaff ?> Staff</span>
+              <span class="text-xl text-gray-500 font-medium"><?= $totalStaff ?> Staff Barang</span>
+            </div>
+          </div>
+          <div class="py-4 px-6 bg-white rounded-xl shadow-xl w-full border-orange-400 hover:scale-105 duration-200 hover:border-b-4 hover:border-r-4 border-0">
+            <div class="flex flex-row justify-between items-center">
+              <span class="text-md text-blue-600">Total Stok Produk</span>
+              <div class="flex items-center">
+                <div class="flex items-center ms-3">
+                  <div>
+                    <button type="button" class="flex " aria-expanded="false" data-dropdown-toggle="dropdown-stok">
+                      <span class="sr-only opacity-0">Open user menu</span>
+                      <span class="text-gray-300 font-extrabold">...</span>
+                    </button>
+                  </div>
+                  <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow" id="dropdown-stok">
+                    <ul class="py-1" role="none">
+                      <li>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Detail Stok Produk</a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <br>
+            <div class="flex flex-row items-center gap-5">
+              <ion-icon name="git-merge-sharp" class="rounded-full p-2 bg-blue-600 text-white text-4xl"></ion-icon>
+              <span class="text-xl text-gray-500 font-medium"><?= $totalStok ?> Stok</span>
             </div>
           </div>
           <div class="py-4 px-6 bg-white rounded-xl shadow-xl w-full xl:w-[100%] border-orange-400 hover:scale-105 duration-200 hover:border-b-4 hover:border-r-4 border-0">
