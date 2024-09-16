@@ -1,4 +1,5 @@
 <?php
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -741,4 +742,50 @@ function updatePassword($conn, $email, $password)
   }
   $stmt->bind_param("ss", $hashed_password, $email);
   $stmt->execute();
+}
+function getJadwalKaryawan()
+{
+  global $conn;
+  $result = mysqli_query($conn, "SELECT users.nama AS nama_karyawan, users.role AS role, tanggal, jam_masuk, jam_keluar, jadwal_karyawan.*
+                                    FROM jadwal_karyawan 
+                                    JOIN users ON jadwal_karyawan.id_karyawan = users.id");
+  $rows = [];
+  while ($row = mysqli_fetch_assoc($result)) {
+    $rows[] = $row;
+  }
+  return $rows;
+}
+
+function getKaryawanByRole($roles)
+{
+  global $conn;
+  $rolePlaceholders = implode(",", array_fill(0, count($roles), '?'));
+  $stmt = $conn->prepare("
+        SELECT id, nama AS nama_karyawan, role AS role_name
+        FROM users
+        WHERE role IN ($rolePlaceholders)
+    ");
+  $stmt->bind_param(str_repeat('s', count($roles)), ...$roles);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  $rows = [];
+  while ($row = $result->fetch_assoc()) {
+    $rows[] = $row;
+  }
+  return $rows;
+}
+
+function tambahJadwalKaryawan($data)
+{
+  global $conn;
+  $id_karyawan = htmlspecialchars($data["id_karyawan"]);
+  $tanggal = htmlspecialchars($data["tanggal"]);
+  $jam_masuk = htmlspecialchars($data["jam_masuk"]);
+  $jam_keluar = htmlspecialchars($data["jam_keluar"]);
+
+  $query = "INSERT INTO jadwal_karyawan (id_karyawan, tanggal, jam_masuk, jam_keluar) 
+              VALUES ('$id_karyawan', '$tanggal', '$jam_masuk', '$jam_keluar')";
+  mysqli_query($conn, $query);
+
+  return mysqli_affected_rows($conn);
 }
