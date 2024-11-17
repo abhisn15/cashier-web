@@ -2,29 +2,57 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-require 'functions.php';
 
-$email_err = '';
-$success_msg = '';
+require "./functions.php";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  $email = trim($_POST['email']);
-  $user = getUserByEmail($conn, $email);
+$success_msg = $email_err = "";
 
-  if ($user) {
-    $verification_code = rand(100000, 999999);
-    saveVerificationCode($conn, $email, $verification_code);
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+  $email = filter_var($_POST["email"], FILTER_VALIDATE_EMAIL);
 
-    // Kirim email dan cek hasilnya
-    if (sendVerificationEmail($email, $verification_code)) {
-      $success_msg = "Kode verifikasi telah dikirim ke email Anda.";
-      header("Refresh:2; url=verify_code.php?email=" . urlencode($email));
-      exit();
-    } else {
-      $email_err = "Gagal mengirim email. Silakan coba lagi.";
-    }
+  if (!$email) {
+    $email_err = "Email tidak valid.";
   } else {
-    $email_err = "Email tidak ditemukan.";
+    $token = bin2hex(random_bytes(16));
+    $token_hash = hash("sha256", $token);
+    $expiry = date("Y-m-d H:i:s", time() + 60 * 5);
+
+    global $conn;
+
+    $stmt = $conn->prepare("UPDATE users
+                SET reset_token_hash = ?,
+                    reset_token_expires_at = ?
+                WHERE email = ?");
+
+    if ($stmt) {
+      $stmt->bind_param("sss", $token_hash, $expiry, $email);
+      $stmt->execute();
+
+      if ($stmt->affected_rows > 0) {
+        $mail = require __DIR__ . "/mailer.php";
+
+        $mail->setFrom("noreply@example.com", "BiKasir Support");
+        $mail->addAddress($email);
+        $mail->Subject = "Password Reset";
+        $mail->isHTML(true); // Gunakan format HTML
+        $mail->Body = <<<END
+                    <p>Klik tautan berikut untuk mereset kata sandi Anda:</p>
+                    <p><a href="http://localhost/kasir/reset-password.php?token={$token}">Reset Password</a></p>
+                    <p>Jika Anda tidak meminta reset kata sandi, abaikan email ini.</p>
+                END;
+
+        try {
+          $mail->send();
+          $success_msg = "Email reset kata sandi telah dikirim. Silakan periksa kotak masuk Anda.";
+        } catch (Exception $e) {
+          $email_err = "Email gagal dikirim. Error: {$mail->ErrorInfo}";
+        }
+      } else {
+        $email_err = "Email tidak ditemukan dalam sistem kami.";
+      }
+    } else {
+      $email_err = "Terjadi kesalahan pada server. Silakan coba lagi.";
+    }
   }
 }
 ?>
@@ -58,14 +86,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="mt-2">
               <input id="email" name="email" type="email" autocomplete="email" placeholder="Masukkan Email anda" required class="block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-400 text-sm sm:text-md sm:leading-6">
             </div>
-            <span class="invalid-feedback text-red-500 text-sm"><?php echo $email_err; ?></span>
+            <span class="invalid-feedback text-red-500 text-sm"><?php echo htmlspecialchars($email_err); ?></span>
           </div>
 
           <div>
-            <button type="submit" class="flex w-full justify-center rounded-md bg-orange-400 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-400">Kirim Kode Melalui Gmail</button>
+            <button id="submitButton" type="submit" class="flex w-full justify-center rounded-md bg-orange-400 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-400">
+              Kirim Kode Melalui Gmail
+            </button>
+
           </div>
           <div class="text-center">
-            <span class="text-green-500"><?php echo $success_msg; ?></span>
+            <span class="text-green-500"><?php echo htmlspecialchars($success_msg); ?></span>
           </div>
         </form>
 
@@ -78,6 +109,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   </div>
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+  <script>
+    const form = document.querySelector('form');
+    const submitButton = document.getElementById('submitButton');
+
+    form.addEventListener('submit', function() {
+      submitButton.disabled = true; // Menonaktifkan tombol submit
+    });
+
+    // Jika berhasil mengirim email, aktifkan kembali tombol submit
+    <?php if (!empty($success_msg)) { ?>
+      submitButton.disabled = false; // Mengaktifkan tombol submit setelah pesan sukses
+    <?php } ?>
+  </script>
+
   <!-- <script src="assets/js/script.js"></script> -->
 </body>
 

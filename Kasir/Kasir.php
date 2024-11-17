@@ -351,7 +351,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['checkout'])) {
               <?php $totalharga = $row['harga'] * $_SESSION['keranjang'][$row['id']] ?>
               <tr class="bg-white border-b hover:bg-gray-50">
                 <td class="px-6 py-4 text-black flex flex-row items-center gap-2 w-80">
-                  <img src="../../assets/img/<?= htmlspecialchars($row['gambar']) ?>" alt="<?= htmlspecialchars($row['nama_barang']) ?>" width="100">
+                  <img src="../assets/img/<?= htmlspecialchars($row['gambar']) ?>" alt="<?= htmlspecialchars($row['nama_barang']) ?>" width="100">
                   <span><?= htmlspecialchars($row['nama_barang']) ?></span>
                 </td>
                 <td class="px-6 py-4 text-center harga-satuan" data-harga="<?= $row['harga'] ?>">

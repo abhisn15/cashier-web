@@ -120,7 +120,7 @@ $jadwalKaryawan = getJadwalKaryawan();
           <th scope="col" class="px-6 py-3">Tanggal Shift</th>
           <th scope="col" class="px-6 py-3">Jadwal Masuk</th>
           <th scope="col" class="px-6 py-3">Jadwal Keluar</th>
-          <th scope="col" class="px-6 py-3">Aksi</th>
+          <!-- <th scope="col" class="px-6 py-3">Aksi</th> -->
         </tr>
       </thead>
       <tbody>
@@ -132,10 +132,10 @@ $jadwalKaryawan = getJadwalKaryawan();
             <td class="px-8 py-4 text-black"><?= $jadwal['tanggal']; ?></td>
             <td class="px-10 py-4 text-black"><?= $jadwal['jam_masuk']; ?></td>
             <td class="px-12 py-4 text-black"><?= $jadwal['jam_keluar']; ?></td>
-            <td>
+            <!-- <td>
               <a href="./JadwalKaryawan/edit.php?id=<?= $jadwal['id']; ?>" class="text-blue-500">Edit</a> |
               <a href="./JadwalKaryawan/hapus.php?id=<?= $jadwal['id']; ?>" onclick="return confirm(' Yakin ingin menghapus jadwal ini?');" class="text-red-500">Hapus</a>
-            </td>
+            </td> -->
           </tr>
         <?php endforeach; ?>
       </tbody>

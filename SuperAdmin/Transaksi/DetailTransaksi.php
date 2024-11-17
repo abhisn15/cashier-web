@@ -92,6 +92,12 @@ $kembalian = $transaksi[0]['tunai'] - $transaksi[0]['total_harga'];
           </button>
         </li>
         <li>
+          <a href="JadwalKaryawan.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:text-white hover:bg-orange-100 hover:bg-orange-400 group">
+            <ion-icon name="time-sharp" class="text-2xl"></ion-icon>
+            <span class="flex-1 ms-3 whitespace-nowrap">Jadwal Karyawan</span>
+          </a>
+        </li>
+        <li>
           <a href="#" class="flex items-center p-2 rounded-lg text-white bg-orange-400 group">
             <ion-icon name="wallet-sharp" class="text-2xl"></ion-icon>
             <span class="flex-1 ms-3 whitespace-nowrap">Transaksi</span>
@@ -118,7 +124,7 @@ $kembalian = $transaksi[0]['tunai'] - $transaksi[0]['total_harga'];
     <br>
     <br>
     <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-      <button onclick="location.href = 'Cetak.php'" class="relative overflow-hidden text-white py-3 px-6 font-semibold rounded-3xl shadow-xl transform transition-all duration-500">
+      <button onclick="location.href = 'Cetak.php?id=<?php echo htmlspecialchars($transaksi[0]['id']) ?>'" class="relative overflow-hidden text-white py-3 px-6 font-semibold rounded-3xl shadow-xl transform transition-all duration-500">
         <span class="absolute top-0 left-0 w-full h-full bg-orange-400"></span>
         <div class="flex flex-row items-center gap-2">
           <ion-icon name="receipt-sharp" class="text-sm sm:text-2xl text-white font-extrabold"></ion-icon>

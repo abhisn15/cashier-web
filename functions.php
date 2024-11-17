@@ -422,7 +422,7 @@ function login($conn)
     }
 
     if (empty($email_err) && empty($password_err)) {
-      $sql = "SELECT id, nama, email, password, role, session_id FROM users WHERE email = ?";
+      $sql = "SELECT id, nama, email, password, role FROM users WHERE email = ?";
       if ($stmt = mysqli_prepare($conn, $sql)) {
         mysqli_stmt_bind_param($stmt, "s", $param_email);
         $param_email = $email;
@@ -431,34 +431,34 @@ function login($conn)
           mysqli_stmt_store_result($stmt);
 
           if (mysqli_stmt_num_rows($stmt) == 1) {
-            mysqli_stmt_bind_result($stmt, $id, $nama, $email, $hashed_password, $role, $session_id);
+            mysqli_stmt_bind_result($stmt, $id, $nama, $email, $hashed_password, $role);
             if (mysqli_stmt_fetch($stmt)) {
               if (password_verify($password, $hashed_password)) {
                 // Generate a new session ID
-                $new_session_id = session_id();
+                // $new_session_id = session_id();
 
                 // Check if the user has an active session
-                if ($session_id && $session_id !== $new_session_id) {
-                  // Optionally, you might want to log out the previous session
-                  // Or inform the user
-                  echo "<script>alert('Akun Anda sudah login di perangkat lain.')</script>";
-                  return;
-                }
+                // if ($session_id && $session_id !== $new_session_id) {
+                //   // Optionally, you might want to log out the previous session
+                //   // Or inform the user
+                //   echo "<script>alert('Akun Anda sudah login di perangkat lain.')</script>";
+                //   return;
+                // }
 
                 // Update the session ID in the database
-                $update_sql = "UPDATE users SET session_id = ? WHERE id = ?";
-                if ($update_stmt = mysqli_prepare($conn, $update_sql)) {
-                  mysqli_stmt_bind_param($update_stmt, "si", $new_session_id, $id);
-                  mysqli_stmt_execute($update_stmt);
-                  mysqli_stmt_close($update_stmt);
-                }
+                // $update_sql = "UPDATE users SET session_id = ? WHERE id = ?";
+                // if ($update_stmt = mysqli_prepare($conn, $update_sql)) {
+                //   mysqli_stmt_bind_param($update_stmt, "si", $new_session_id, $id);
+                //   mysqli_stmt_execute($update_stmt);
+                //   mysqli_stmt_close($update_stmt);
+                // }
 
                 // Set session variables
                 $_SESSION["login"] = true;
                 $_SESSION["id"] = $id;
                 $_SESSION["nama"] = $nama;
                 $_SESSION["role"] = $role;
-                $_SESSION["session_id"] = $new_session_id; // Store new session ID
+                // $_SESSION["session_id"] = $new_session_id; // Store new session ID
 
                 setcookie("nama", $nama, time() + (86400 * 2), "/"); // Cookie berlaku selama 2 hari
 
@@ -785,6 +785,50 @@ function tambahJadwalKaryawan($data)
 
   $query = "INSERT INTO jadwal_karyawan (id_karyawan, tanggal, jam_masuk, jam_keluar) 
               VALUES ('$id_karyawan', '$tanggal', '$jam_masuk', '$jam_keluar')";
+  mysqli_query($conn, $query);
+
+  return mysqli_affected_rows($conn);
+}
+
+function getJadwalKaryawanById($id_jadwal)
+{
+  global $conn;
+  // Sanitize the input to prevent SQL injection
+  $id_jadwal = mysqli_real_escape_string($conn, $id_jadwal);
+
+  // Query to get the employee schedule by id
+  $query = "SELECT * FROM jadwal_karyawan WHERE id = '$id_jadwal'";
+
+  // Execute the query
+  $result = mysqli_query($conn, $query);
+
+  // Check if the query was successful and return the result
+  if ($result) {
+    return mysqli_fetch_assoc($result);
+  } else {
+    // Return an empty array or handle errors as needed
+    return null;
+  }
+}
+
+
+// Function to edit the jadwal_karyawan by id
+function editJadwalKaryawanById($data)
+{
+  global $conn;
+  $id_jadwal = htmlspecialchars($data["id_jadwal"]);
+  $id_karyawan = htmlspecialchars($data["id_karyawan"]);
+  $tanggal = htmlspecialchars($data["tanggal"]);
+  $jam_masuk = htmlspecialchars($data["jam_masuk"]);
+  $jam_keluar = htmlspecialchars($data["jam_keluar"]);
+
+  $query = "UPDATE jadwal_karyawan SET 
+              id_karyawan = '$id_karyawan', 
+              tanggal = '$tanggal', 
+              jam_masuk = '$jam_masuk', 
+              jam_keluar = '$jam_keluar' 
+            WHERE id_jadwal = '$id_jadwal'";
+
   mysqli_query($conn, $query);
 
   return mysqli_affected_rows($conn);

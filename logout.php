@@ -3,18 +3,18 @@ require 'functions.php'; // Ganti dengan path yang sesuai ke file functions.php
 
 session_start();
 
-// Cek jika ada ID sesi pengguna di sesi
-if (isset($_SESSION["id"])) {
-  $id = $_SESSION["id"];
+// // Cek jika ada ID sesi pengguna di sesi
+// if (isset($_SESSION["id"])) {
+//   $id = $_SESSION["id"];
 
-  // Hapus session_id di database jika ada
-  $sql = "UPDATE users SET session_id = NULL WHERE id = ?";
-  if ($stmt = mysqli_prepare($conn, $sql)) {
-    mysqli_stmt_bind_param($stmt, "i", $id);
-    mysqli_stmt_execute($stmt);
-    mysqli_stmt_close($stmt);
-  }
-}
+//   // Hapus session_id di database jika ada
+//   $sql = "UPDATE users SET session_id = NULL WHERE id = ?";
+//   if ($stmt = mysqli_prepare($conn, $sql)) {
+//     mysqli_stmt_bind_param($stmt, "i", $id);
+//     mysqli_stmt_execute($stmt);
+//     mysqli_stmt_close($stmt);
+//   }
+// }
 
 // Kosongkan array $_SESSION
 $_SESSION = array();

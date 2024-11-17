@@ -105,6 +105,12 @@ if (isset($_POST['submit'])) {
           </button>
         </li>
         <li>
+          <a href="JadwalKaryawan.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:text-white hover:bg-orange-100 hover:bg-orange-400 group">
+            <ion-icon name="time-sharp" class="text-2xl"></ion-icon>
+            <span class="flex-1 ms-3 whitespace-nowrap">Jadwal Karyawan</span>
+          </a>
+        </li>
+        <li>
           <a href="../Transaksi.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:text-white hover:bg-orange-400 group">
             <ion-icon name="wallet-sharp" class="text-2xl"></ion-icon>
             <span class="flex-1 ms-3 whitespace-nowrap">Transaksi</span>

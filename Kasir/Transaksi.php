@@ -63,6 +63,7 @@ if (isset($_POST["cari"])) {
                              LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
                              LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
                              WHERE transaksi.id_kasir = $id_kasir
+        ORDER BY transaksi.id DESC
                              LIMIT $limit OFFSET $offset");
 
     $total = query("SELECT COUNT(*) AS total FROM transaksi WHERE id_kasir = $id_kasir")[0]['total'];
@@ -82,6 +83,7 @@ if (isset($_POST["cari"])) {
                          LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
                          LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
                          WHERE transaksi.id_kasir = $id_kasir
+        ORDER BY transaksi.id DESC
                          LIMIT $limit OFFSET $offset");
 
   // Query untuk menghitung total data

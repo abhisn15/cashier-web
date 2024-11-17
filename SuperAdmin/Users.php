@@ -121,6 +121,12 @@ $total_pages = ceil($total_data / $limit);
           </ul>
         </li>
         <li>
+          <a href="JadwalKaryawan.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:text-white hover:bg-orange-100 hover:bg-orange-400 group">
+            <ion-icon name="time-sharp" class="text-2xl"></ion-icon>
+            <span class="flex-1 ms-3 whitespace-nowrap">Jadwal Karyawan</span>
+          </a>
+        </li>
+        <li>
           <a href="Transaksi.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:text-white hover:bg-orange-400 group">
             <ion-icon name="wallet-sharp" class="text-2xl"></ion-icon>
             <span class="flex-1 ms-3 whitespace-nowrap">Transaksi</span>
@@ -194,7 +200,7 @@ $total_pages = ceil($total_data / $limit);
         </tbody>
       </table>
     </div>
-<div class="flex justify-center mt-5">
+    <div class="flex justify-center mt-5">
       <nav>
         <ul class="inline-flex -space-x-px">
           <?php if ($page > 1): ?>
@@ -203,11 +209,11 @@ $total_pages = ceil($total_data / $limit);
             </li>
           <?php endif; ?>
 
-<?php for ($i = 1; $i <= $total_pages; $i++): ?>
-    <li>
-        <a href="?page=<?= $i ?>" class="px-3 py-2 leading-tight <?= $i == $page ? 'bg-orange-400 text-white' : '!text-gray-500 bg-white' ?> border border-gray-300 hover:bg-gray-100 hover:text-gray-700"><?= $i ?></a>
-    </li>
-<?php endfor; ?>
+          <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+            <li>
+              <a href="?page=<?= $i ?>" class="px-3 py-2 leading-tight <?= $i == $page ? 'bg-orange-400 text-white' : '!text-gray-500 bg-white' ?> border border-gray-300 hover:bg-gray-100 hover:text-gray-700"><?= $i ?></a>
+            </li>
+          <?php endfor; ?>
 
 
           <?php if ($page < $total_pages): ?>

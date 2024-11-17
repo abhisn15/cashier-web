@@ -125,7 +125,7 @@ $pelangganTeraktif = getPelangganTeraktif();
             <div class="flex flex-row justify-between items-center">
               <span class="text-md text-orange-400">Total Pelanggan Terdaftar</span>
               <div class="flex items-center">
-                <div class="flex items-center ms-3">
+                <!-- <div class="flex items-center ms-3">
                   <div>
                     <button type="button" class="flex " aria-expanded="false" data-dropdown-toggle="dropdown-pelanggan">
                       <span class="sr-only opacity-0">Open user menu</span>
@@ -139,7 +139,7 @@ $pelangganTeraktif = getPelangganTeraktif();
                       </li>
                     </ul>
                   </div>
-                </div>
+                </div> -->
               </div>
             </div>
             <br>
@@ -152,7 +152,7 @@ $pelangganTeraktif = getPelangganTeraktif();
             <div class="flex flex-row justify-between items-center">
               <span class="text-md text-blue-400">Total Kasir</span>
               <div class="flex items-center">
-                <div class="flex items-center ms-3">
+                <!-- <div class="flex items-center ms-3">
                   <div>
                     <button type="button" class="flex " aria-expanded="false" data-dropdown-toggle="dropdown-kasir">
                       <span class="sr-only opacity-0">Open user menu</span>
@@ -166,7 +166,7 @@ $pelangganTeraktif = getPelangganTeraktif();
                       </li>
                     </ul>
                   </div>
-                </div>
+                </div> -->
               </div>
             </div>
             <br>
@@ -179,13 +179,13 @@ $pelangganTeraktif = getPelangganTeraktif();
             <div class="flex flex-row justify-between items-center">
               <span class="text-md text-red-400">Total Staff Barang</span>
               <div class="flex items-center">
-                <div class="flex items-center ms-3">
+                <!-- <div class="flex items-center ms-3">
                   <div>
                     <button type="button" class="flex " aria-expanded="false" data-dropdown-toggle="dropdown-staff">
                       <span class="sr-only opacity-0">Open user menu</span>
                       <span class="text-gray-300 font-extrabold">...</span>
                     </button>
-                  </div>
+                  </div> 
                   <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow" id="dropdown-staff">
                     <ul class="py-1" role="none">
                       <li>
@@ -193,7 +193,7 @@ $pelangganTeraktif = getPelangganTeraktif();
                       </li>
                     </ul>
                   </div>
-                </div>
+                </div> -->
               </div>
             </div>
             <br>
@@ -207,12 +207,12 @@ $pelangganTeraktif = getPelangganTeraktif();
               <span class="text-md text-blue-600">Total Stok Produk</span>
               <div class="flex items-center">
                 <div class="flex items-center ms-3">
-                  <div>
+                  <!-- <div>
                     <button type="button" class="flex " aria-expanded="false" data-dropdown-toggle="dropdown-stok">
                       <span class="sr-only opacity-0">Open user menu</span>
                       <span class="text-gray-300 font-extrabold">...</span>
                     </button>
-                  </div>
+                  </div> -->
                   <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow" id="dropdown-stok">
                     <ul class="py-1" role="none">
                       <li>
@@ -234,12 +234,12 @@ $pelangganTeraktif = getPelangganTeraktif();
               <span class="text-md text-orange-800">Total Produk</span>
               <div class="flex items-center">
                 <div class="flex items-center ms-3">
-                  <div>
+                  <!-- <div>
                     <button type="button" class="flex " aria-expanded="false" data-dropdown-toggle="dropdown-produk">
                       <span class="sr-only opacity-0">Open user menu</span>
                       <span class="text-gray-300 font-extrabold">...</span>
                     </button>
-                  </div>
+                  </div> -->
                   <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow" id="dropdown-produk">
                     <ul class="py-1" role="none">
                       <li>
@@ -262,12 +262,12 @@ $pelangganTeraktif = getPelangganTeraktif();
             <span class="text-md text-green-600">Total Transaksi dan Penghasilan</span>
             <div class="flex items-center">
               <div class="flex items-center ms-3">
-                <div>
+                <!-- <div>
                   <button type="button" class="flex " aria-expanded="false" data-dropdown-toggle="dropdown-transaksi">
                     <span class="sr-only opacity-0">Open user menu</span>
                     <span class="text-gray-300 font-extrabold">...</span>
                   </button>
-                </div>
+                </div> -->
                 <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow" id="dropdown-transaksi">
                   <ul class="py-1" role="none">
                     <li>
@@ -292,12 +292,12 @@ $pelangganTeraktif = getPelangganTeraktif();
             <span class="text-md text-yellow-500">Produk Terlaris</span>
             <div class="flex items-center">
               <div class="flex items-center ms-3">
-                <div>
+                <!-- <div>
                   <button type="button" class="flex " aria-expanded="false" data-dropdown-toggle="dropdown-terlaris">
                     <span class="sr-only opacity-0">Open user menu</span>
                     <span class="text-gray-300 font-extrabold">...</span>
                   </button>
-                </div>
+                </div> -->
                 <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow" id="dropdown-terlaris">
                   <ul class="py-1" role="none">
                     <li>
@@ -328,12 +328,12 @@ $pelangganTeraktif = getPelangganTeraktif();
             <h4 class="text-lg text-orange-400">Kasir Teraktif</h4>
             <div class="flex items-center">
               <div class="flex items-center ms-3">
-                <div>
+                <!-- <div>
                   <button type="button" class="flex" aria-expanded="false" data-dropdown-toggle="dropdown-kasir-teraktif">
                     <span class="sr-only opacity-0">Open user menu</span>
                     <span class="text-gray-300 font-extrabold">...</span>
                   </button>
-                </div>
+                </div> -->
                 <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow" id="dropdown-kasir-teraktif">
                   <ul class="py-1" role="none">
                     <li>
@@ -365,12 +365,12 @@ $pelangganTeraktif = getPelangganTeraktif();
             <h4 class="text-lg text-orange-400">Pelanggan Teraktif</h4>
             <div class="flex items-center">
               <div class="flex items-center ms-3">
-                <div>
+                <!-- <div>
                   <button type="button" class="flex" aria-expanded="false" data-dropdown-toggle="dropdown-pelanggan-teraktif">
                     <span class="sr-only opacity-0">Open user menu</span>
                     <span class="text-gray-300 font-extrabold">...</span>
                   </button>
-                </div>
+                </div> -->
                 <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow" id="dropdown-pelanggan-teraktif">
                   <ul class="py-1" role="none">
                     <li>

@@ -41,6 +41,7 @@ function cari($keyword)
         WHERE transaksi.id LIKE ? 
            OR pelanggan.nama LIKE ? 
            OR kasir.nama LIKE ?
+        ORDER BY transaksi.id DESC
     ");
   $stmt->bind_param('sss', $keyword, $keyword, $keyword);
   $stmt->execute();
@@ -62,6 +63,7 @@ if (isset($_POST["cari"])) {
             FROM transaksi 
             LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
             LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
+            ORDER BY transaksi.id DESC
             LIMIT $limit OFFSET $offset
         ");
     $total = query("SELECT COUNT(*) AS total FROM transaksi")[0]['total'];
@@ -81,12 +83,12 @@ if (isset($_POST["cari"])) {
         FROM transaksi 
         LEFT JOIN users AS pelanggan ON transaksi.id_user = pelanggan.id 
         LEFT JOIN users AS kasir ON transaksi.id_kasir = kasir.id
+        ORDER BY transaksi.id DESC
         LIMIT $limit OFFSET $offset
     ");
   $total = query("SELECT COUNT(*) AS total FROM transaksi")[0]['total'];
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -137,6 +139,12 @@ if (isset($_POST["cari"])) {
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
             </svg>
           </button>
+        </li>
+        <li>
+          <a href="JadwalKaryawan.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:text-white hover:bg-orange-100 hover:bg-orange-400 group">
+            <ion-icon name="time-sharp" class="text-2xl"></ion-icon>
+            <span class="flex-1 ms-3 whitespace-nowrap">Jadwal Karyawan</span>
+          </a>
         </li>
         <li>
           <a href="#" class="flex items-center p-2 rounded-lg text-white bg-orange-400 group">

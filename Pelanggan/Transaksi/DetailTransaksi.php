@@ -1,5 +1,6 @@
 <?php
 require '../../functions.php';
+
 session_start();
 
 $username = $_SESSION['nama'];
@@ -109,7 +110,7 @@ $kembalian = $transaksi[0]['tunai'] - $transaksi[0]['total_harga'];
     <div class="h-full px-3 pb-4 overflow-y-auto bg-white rounded-2xl bg-gray-800 border-r-2">
       <ul class="space-y-2 font-medium">
         <li>
-          <a href="Dashboard.php" class="flex items-center p-2 rounded-lg text-gray-900 hover:text-white hover:bg-orange-400 group">
+          <a href="../Dashboard.php" class="flex items-center p-2 rounded-lg text-gray-900 hover:text-white hover:bg-orange-400 group">
             <ion-icon name="home-sharp" class="text-gray-900 group-hover:text-white text-2xl"></ion-icon>
             <span class="ms-3">Dashboard</span>
           </a>
@@ -121,7 +122,7 @@ $kembalian = $transaksi[0]['tunai'] - $transaksi[0]['total_harga'];
           </a>
         </li>
         <li>
-          <a href="../logout.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:text-white hover:bg-red-600 group">
+          <a href="../../logout.php" class="flex items-center p-2 text-gray-900 rounded-lg hover:text-white hover:bg-red-600 group">
             <ion-icon name="log-out-sharp" class="text-2xl"></ion-icon>
             <span class="flex-1 ms-3 whitespace-nowrap">Logout</span>
           </a>
